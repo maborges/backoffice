@@ -92,3 +92,49 @@ define('EVENT_PRIORITY_NORMAL', 100);
  * @deprecated Use \CodeIgniter\Events\Events::PRIORITY_HIGH instead.
  */
 define('EVENT_PRIORITY_HIGH', 10);
+
+/**
+ * Definition of application constants
+ */
+
+// Aplication
+define('APP_NAME',    'GranBO');
+define('APP_VERSION', '1.0.0');
+
+// Database access
+define('DB_DNS',                ''); 
+define('DB_HOST',               '172.17.16.19');
+define('DB_NAME',               'suif_grancafe');
+define('DB_USER',               'suif_user');
+define('DB_PASS',               'asRf455TtykgQ7X');
+define('DB_PORT',               3306);
+define('DB_CHARSET',            'utf8mb4');
+define('DB_COLLAT',             'utf8mb4_general_ci');
+
+// encriptografia
+define('ENCRYPTION_KEY',        '8nsnIqk9SgfvBHdqqXuxBJesKKFn6gbO');
+
+// operações de registro
+define('OR_INSERT',             0);
+define('OR_UPDATE',             1);
+define('OR_DELETE',             2);
+define('OR_RESEARCH',           3);
+
+// Mensagens de consistência de campos
+// FIELD_MESSAGE_????
+define('FIELD_MESSAGE_REQUIRED',             'Campo obrigatório.');
+define('FIELD_MESSAGE_MIN_LENGTH',           '{field} deve ter no mínimo %s caracteres');
+define('FIELD_MESSAGE_MAX_LENGTH',           '{field} deve ter no máximo %s caracteres');
+define('FIELD_MESSAGE_LESS_THAN',            '{field} deve ser menor que %s');
+define('FIELD_MESSAGE_LESS_THAN_EQUAL_TO',   '{field} deve ser menor ou igual a %s');
+define('FIELD_MESSAGE_GREATER_THAN',         '{field} deve ser maior que %s');
+define('FIELD_MESSAGE_GREATER_THAN_EQUAL_TO','{field} deve ser maior ou igual a %s');
+
+define('FIELD_MESSAGE_UPLOADED',             'A {field} é obrigatória');
+define('FIELD_MESSAGE_MINE_IN',              'O arquivo da {field} deve ser do tipo %s');
+define('FIELD_MESSAGE_MAX_SIZE',             'O arquivo da {field} deve ter no máximo %s');
+
+
+define('DATATABLES_PT_BR',                    'assets/plugins/datatables/pt-BR.json');
+
+

@@ -1,0 +1,97 @@
+body {
+    line-height: 1.3 !important;
+}
+
+:root {
+    --app-primary-color: #501c1e;
+    --app-secondary-color: #d6241a;
+    --app-tertiary-color: #039146;
+}
+
+.app-primary-color {
+    color: var(--app-primary-color) !important;
+}
+
+.app-secondary-color {
+    color: var(--app-secondary-color) !important;
+}
+
+.app-tertiary-color {
+    color: var(--app-tertiary-color) !important;
+}
+
+label:not(.form-check-label):not(.custom-file-label) {
+    font-weight: 500;
+}
+
+label {
+    margin-bottom: 0.1rem !important;
+}   
+
+table.dataTable thead th,
+table.dataTable tfoot th {
+    font-weight: 500 !important;
+}
+
+.app-card-outline-top {
+    border-top: 3px solid var(--app-primary-color);
+}
+
+.glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.938), rgba(255, 255, 255, 0.70));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-menu {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.938), rgba(255, 255, 255, 0.70));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.responsive-background {
+    /*   background-image: url('path/to/your/image.jpg'); */
+    /* Caminho para a sua imagem */
+    background-size: cover;
+    /* Ajusta a imagem para cobrir o elemento */
+    background-position: center;
+    /* Centraliza a imagem */
+    background-repeat: no-repeat;
+    /* Evita que a imagem se repita */
+    width: 100%;
+    height: 100vh;
+    /* Define a altura como 100% da altura da viewport */
+}
+
+.logo-image {
+    width: 150px;
+    height: 150px;
+}
+
+.ui-autocomplete {
+    font-size: .575rem;
+    /* Ajuste o valor para o tamanho desejado */
+}
+
+div.dt-buttons {
+    border-radius: 10px;
+}
+
+table.dataTable caption {
+    caption-side: top;
+    /* Define que o caption deve estar no topo */
+    text-align: left;
+    /* Alinha o texto à esquerda (ou você pode escolher centralizar) */
+    font-weight: bold;
+    /* Adiciona um destaque à legenda */
+}
+
+
+
+
+

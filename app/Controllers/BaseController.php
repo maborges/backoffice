@@ -35,7 +35,11 @@ abstract class BaseController extends Controller
      *
      * @var list<string>
      */
-    protected $helpers = [];
+    protected $helpers = ['form',          // para utilizar o helpe form_open (nativo do CI4)
+                          'Encryption',    // Diz que é para carregar o helper Encryption_helper = encryption 
+                          'Functions',     // Funções auxiliares
+                          'Toast',         // Mensagens Toastr
+                          'Sweetalert'];   // Mensagens Sweet Alert
 
     /**
      * Be sure to declare properties for any property fetch you initialized.

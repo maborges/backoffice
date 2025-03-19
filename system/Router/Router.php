@@ -220,7 +220,7 @@ class Router implements RouterInterface
         // want this, like in the case of API's.
         if (! $this->collection->shouldAutoRoute()) {
             throw new PageNotFoundException(
-                "Can't find a route for '{$this->collection->getHTTPVerb()}: {$uri}'."
+                "Rota não encontrada para '{$this->collection->getHTTPVerb()}: {$uri}'."
             );
         }
 
