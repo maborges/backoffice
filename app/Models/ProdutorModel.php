@@ -17,7 +17,8 @@ class ProdutorModel extends PessoaModel
         'cadastro_validado',
         'comprador',
         'validado_serasa',
-        'embargado'
+        'embargado',
+        'categoria_pessoa'
     ];
 
     /**
@@ -26,7 +27,7 @@ class ProdutorModel extends PessoaModel
     protected function getFilters()
     {
         parent::getFilters();
-        $this->where('cadastro_pessoa.classificacao_1', '63');
+        $this->whereIn('cadastro_pessoa.categoria_pessoa', ['P','PC','C']);
     }
 
     public function getWithDetails($id = null)
@@ -158,6 +159,16 @@ class ProdutorModel extends PessoaModel
         }
 
         return $resultFields;
+    }
+
+    public function getProdutoresPorComprador($comprador)
+    {
+        $builder = $this->select("cadastro_pessoa.codigo, cadastro_pessoa.nome")
+                        ->where('cadastro_pessoa.comprador', $comprador)
+                        ->where('cadastro_pessoa.estado_registro', 'ATIVO')
+                        ->orderBy('cadastro_pessoa.nome');
+
+        return $builder->get()->getResultArray();
     }
     
 }

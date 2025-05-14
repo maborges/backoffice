@@ -10,54 +10,62 @@
             <div class="col-md-12">
                 <div class="card card-solidy shadow-sm">
 
-                    <div class="card-header d-flex">
-                        <div class="row col-md-12">
+                    <div class="d-flex card-header">
+                        <div class="col-md-12 row">
 
-                            <div class="form-group col-2">
+                            <div class="col-2 form-group">
                                 <label for="startDate">Data Inicial</label>
                                 <input type="date" class="form-control form-control-sm" name="startDate" id="startDate"
                                     value="<?= $startDate ?>">
                             </div>
 
-                            <div class="form-group col-2">
+                            <div class="col-2 form-group">
                                 <label for="endDate">Data Final</label>
                                 <input type="date" class="form-control form-control-sm" name="endDate" id="endDate"
                                     value="<?= $endDate ?>">
                             </div>
 
-                            <div class="form-group col-2">
+                            <div class="col-2 form-group">
                                 <label for="nomeProduto">Produto</label>
                                 <input type="search" class="form-control form-control-sm" name="nomeProduto" id="nomeProduto" value="<?= $nomeProduto ?>">
                                 <input type="hidden" name="produto" id="produto" value="<?= $produto ?>">
                             </div>
 
-                            <div class="form-group col-3">
-                                <label for="nomeProdutor">Produtor</label>
-                                <input type="text" class="form-control form-control-sm" name="nomeProdutor" id="nomeProdutor" value="<?= $nomeProdutor ?>">
-                                <input type="hidden" name="produtor" id="produtor" value="<?= $produtor ?>">
+                            <div class="col-3 form-group">
+                                <label for="nomeComprador">Comprador</label>
+                                <input type="text" class="form-control form-control-sm" name="nomeComprador" id="nomeComprador" value="<?= $nomeComprador ?>">
+                                <input type="hidden" name="comprador" id="comprador" value="<?= $comprador ?>">
                             </div>
 
-                            <div class="form-group ms-3 col-2 d-flex align-items-end">
-                                <a id="btnPesquisa" class="btn btn-sm btn-outline-secondary btn-flat shadow-sm px-4">
-                                    <i class="fa-solid fa-magnifying-glass mr-1"></i>Pesquisar</a>
+
+                            <div class="col-2 d-flex form-group align-items-end ms-3">
+                                <a id="btnPesquisa" class="btn btn-flat btn-outline-secondary btn-sm shadow-sm px-4">
+                                    <i class="fa-magnifying-glass fa-solid mr-1"></i>Pesquisar</a>
                             </div>
                         </div>
 
                     </div>
 
+                    <div class="d-flex card-header mb-0">
+                        <div class="col-12 d-flex justify-content-left mb-0">
+                            <div class="card border-success mb-3 shadow-sm">
+                                <div class="card-body bg-success p-2 text-white bg-opacity-40">
+                                    <div>Média Normal: <span id="mediaNormal"></span> - Média Ponderada: <span id="mediaPonderada"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card-body mt-0">
-                        <div class="card-body mt-1 pt-1 ">
+                        <div class="card-body mt-1 pt-1">
                             <div class="row">
-                                <table class="display compact" id="tblGapCompraEntrega" style="width: 100%; height: auto">
+                                <table class="compact display" id="tblGapCompraEntrega" style="width: 100%; height: auto">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>Código Produto</th>
                                             <th>Produto</th>
-                                            <th>Código Produtor</th>
                                             <th>Produtor</th>
-                                            <th>Tipo</th>
                                             <th>Compra</th>
-                                            <th>Sankhya</th>
+                                            <th>Quantidade</th>
                                             <th>Compra em</th>
                                             <th>Entregue em</th>
                                             <th>Em Dias</th>
@@ -114,22 +122,22 @@ if (!empty($server_error)) {
                 },
                 {
                     extend: 'searchBuilder',
-                    text: '<i class="fa-solid fa-file-csv"></i>',
+                    text: '<i class="fa-file-csv fa-solid"></i>',
                     className: "btn btn-sm btn-outline-secondary btn-flat shadow-sm"
                 },
                 {
                     extend: 'copy',
-                    text: '<i class="fa-solid fa-copy"></i>',
+                    text: '<i class="fa-copy fa-solid"></i>',
                     className: "btn btn-sm btn-outline-secondary btn-flat shadow-sm"
                 },
                 {
                     extend: 'print',
-                    text: '<i class="fa-solid fa-print"></i>',
+                    text: '<i class="fa-print fa-solid"></i>',
                     className: "btn btn-sm btn-outline-secondary btn-flat shadow-sm"
                 },
                 {
                     extend: 'csv',
-                    text: '<i class="fa-solid fa-file-csv"></i>',
+                    text: '<i class="fa-file-csv fa-solid"></i>',
                     className: "btn btn-sm btn-outline-secondary btn-flat shadow-sm"
                 },
             ],
@@ -143,7 +151,7 @@ if (!empty($server_error)) {
                     d.startDate = $('#startDate').val();
                     d.endDate = $('#endDate').val();
                     d.produto = $('#produto').val();
-                    d.produtor = $('#produtor').val();
+                    d.comprador = $('#comprador').val();
                 },
                 dataSrc: function(json) {
                     if (json.error) {
@@ -158,6 +166,28 @@ if (!empty($server_error)) {
                         });
                         return [];
                     }
+
+                    // Calcula a média normal e a média ponderada
+                    let totalGap = 0;
+                    let totalPeso = 0;
+                    let totalQuantidade = 0;
+
+                    json.data.forEach(row => {
+                        const gapDias = parseFloat(row.gapDias) || 0;
+                        const quantidade = parseFloat(row.quantidade) || 0;
+
+                        totalGap += gapDias;
+                        totalQuantidade += quantidade;
+                        totalPeso += gapDias * quantidade;
+                    });
+
+                    const mediaNormal = totalGap / json.data.length || 1;
+                    const mediaPonderada = totalPeso / totalQuantidade || 1;
+
+                    // Exibe os resultados na página
+                    $('#mediaNormal').text(mediaNormal.toFixed(2));
+                    $('#mediaPonderada').text(mediaPonderada.toFixed(2));
+
                     return json.data;
                 },
                 error: function(xhr, status, error) {
@@ -182,32 +212,25 @@ if (!empty($server_error)) {
             },
             pageLength: 25,
 
-            columnDefs: [{
-                targets: [0, 2], // Índice da coluna "Unidade"
-                visible: false // Oculta a coluna "Unidade" da visualização
-                //  searchable: false
-            }],
-
             columns: [{
-                    data: 'codigoProduto'
-                },
-                {
                     data: 'nomeProduto'
-                },
-                {
-                    data: 'codigoProdutor'
                 },
                 {
                     data: 'nomeProdutor'
                 },
                 {
-                    data: 'tipo'
-                },
-                {
                     data: 'numeroCompra'
                 },
                 {
-                    data: 'idSankhya'
+                    data: 'quantidade',
+                    className: 'dt-right',
+                    render: function(data, type, row) {
+                        var valorFormatado = parseFloat(data).toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                        return valorFormatado;
+                    }
                 },
                 {
                     data: 'dataCompra',
@@ -225,32 +248,6 @@ if (!empty($server_error)) {
                     data: 'gapDias'
                 }
             ]
-        });
-
-        $("#nomeProdutor").autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: "/cadastro/produtor_locate",
-                    type: "GET",
-                    data: {
-                        term: request.term
-                    },
-                    success: function(data) {
-                        response($.map(data, function(item) {
-                            return {
-                                label: item.nome,
-                                value: item.nome,
-                                id: item.codigo
-                            };
-                        }));
-                    }
-                });
-            },
-
-            select: function(event, ui) {
-                $("#produtor").val(ui.item.id);
-            },
-            minLength: 2
         });
 
         $("#nomeProduto").autocomplete({
@@ -287,14 +284,114 @@ if (!empty($server_error)) {
 
         // Recarrega a tabela ao clicar no botão
         $('#btnPesquisa').on('click', function() {
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+
+            if (!startDate || !endDate) {
+                toastr.error('Por favor, verifique se ambas as datas são válidas.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            var startDateObj = new Date(startDate);
+            var endDateObj = new Date(endDate);
+
+            if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+                toastr.error('Por favor, insira datas válidas.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            if (startDateObj > endDateObj) {
+                toastr.error('A data inicial não pode ser maior que a data final.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            var produto = $('#produto').val();
+            if (!produto || produto <= 0) {
+                toastr.error('Por favor, informe o produto.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            var comprador = $('#comprador').val();
+            if (!comprador || comprador <= 0) {
+                toastr.error('Por favor, informe o comprador.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',    
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
             table.ajax.reload(null, false); // O 'false' mantém a página de paginação atual
         });
 
 
-        $("#nomeProdutor").on('change keyup', function() {
+        $("#nomeComprador").on('change keyup', function() {
             if ($(this).val() === '') {
-                $("#produtor").val(''); // Limpa o campo #produto
+                $("#comprador").val(''); // Limpa o campo #produto
             }
+        });
+
+
+
+        $("#nomeComprador").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "/cadastro/comprador_locate",
+                    type: "GET",
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.nome_completo,
+                                value: item.nome_completo,
+                                id: item.username
+                            };
+                        }));
+                    }
+                });
+            },
+            select: function(event, ui) {
+                $("#comprador").val(ui.item.id);
+            },
+            minLength: 2
         });
 
 

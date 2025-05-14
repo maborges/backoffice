@@ -23,7 +23,8 @@ class PessoaModel extends Model
         'cadastro_validado',
         'validado_serasa',
         'embargado',
-        'comprador'
+        'comprador',
+        'categoria_pessoa'
     ];
 
     protected bool $allowEmptyInserts = false;

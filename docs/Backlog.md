@@ -186,3 +186,25 @@
 # Reunião - 24/02/2025 - Saulo / Rubens
   - [X] Colocar saldo a puxar no dashboard 
   - [X] no dashboard o preço médio é o gerencial 
+
+# 06/04/2025 - Rubens passou para ser alterado no CRM  
+   Filiais:
+		Pode comprar e armazenar
+		Outras só podem comprar
+		Outras só podem armazenar
+		
+		Colocar "Filial da Nota" no momento da compra contrato (explicito)
+		Criar um combo para quais filiais ele pode fazer a compra
+		Verificar quais filiais ele porde fazer a compra (criar nota tebela???)
+
+# Reunião = 10/04/2025  - Rubens/Saulo
+   Gestão de estoque e vendas 
+      - Saldo do Estoque do Suif (Compras - Armazenado)
+      - Saldo de Estoque do Sankhya (Compras - (Saida - Armazenado - Contrato))
+      - Saldo Fiscal do Sankhya - Saldo fiscal do Sankhya
+
+   Nesta processo o Saulo poderá 
+
+   Falar sobre alterações de compradores/filiais e compradores/produtos no CRM
+
+

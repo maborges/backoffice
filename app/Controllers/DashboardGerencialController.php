@@ -42,7 +42,8 @@ class DashboardGerencialController extends BaseController
             'startDate'         => $startDate,
             'endDate'           => $endDate,
             'produto'           => '-2',
-            'nomeProduto'       => ''
+            'nomeProduto'       => '',
+            'filial'            => ''
         ];
 
         return view('dashboard/gerencial', $data);

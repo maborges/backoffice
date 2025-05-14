@@ -20,9 +20,14 @@
                             </div>
 
                             <div class="form-group col-3">
-                                <label for="nomeProdutor">Produtor</label>
-                                <input type="text" class="form-control form-control-sm" name="nomeProdutor" id="nomeProdutor" value="<?= $nomeProdutor ?>">
-                                <input type="hidden" name="produtor" id="produtor" value="<?= $produtor ?>">
+                                <label for="filial">Filial</label>
+                                <input type="text" class="form-control form-control-sm" name="filial" id="filial" value="<?= $filial ?>">
+                            </div>
+
+                            <div class="col-3 form-group">
+                                <label for="nomeComprador">Comprador</label>
+                                <input type="text" class="form-control form-control-sm" name="nomeComprador" id="nomeComprador" value="<?= $nomeComprador ?>">
+                                <input type="hidden" name="comprador" id="comprador" value="<?= $comprador ?>">
                             </div>
 
                             <div class="form-group ms-3 col-2 d-flex align-items-end">
@@ -42,13 +47,10 @@
                                             <th>Produto</th>
                                             <th>Produtor</th>
                                             <th>Filial</th>
-                                            <th>Compra</th>
-                                            <th>Compra em</th>
                                             <th>Quantidade</th>
-                                            <th>Valor Unitário</th>
-                                            <th>Valor Total</th>
+                                            <th>Média Dias Atraso</th>
+                                            <th>Média Valor</th>
                                             <th>Valor Pago</th>
-                                            <th>Unidade</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -129,7 +131,8 @@ if (!empty($server_error)) {
                 type: "POST",
                 data: function(d) {
                     d.produto = $('#produto').val();
-                    d.produtor = $('#produtor').val();
+                    d.filial = $('#filial').val();
+                    d.comprador = $('#comprador').val();
                 },
                 dataSrc: function(json) {
                     if (json.error) {
@@ -147,6 +150,7 @@ if (!empty($server_error)) {
                     return json.data;
                 },
                 error: function(xhr, status, error) {
+                    console.log(xhr, status, error);
                     toastr.error(error, 'erro', {
                         closeButton: true,
                         progressBar: true,
@@ -162,30 +166,36 @@ if (!empty($server_error)) {
             },
             pageLength: 25,
             columnDefs: [{
-                    targets: 5,
+                    targets: 3,
                     className: 'dt-right',
                     render: function(data, type, row) {
                         var valorFormatado = parseFloat(data).toLocaleString("pt-BR", {
-                            minimumFractionDigits: 3,
-                            maximumFractionDigits: 3
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1
                         });
-                        var unidade = row['unidade'];
-                        return `${valorFormatado} ${unidade}`;
+                        return `${valorFormatado}`;
                     }
                 },
                 {
-                    targets: [6, 7, 8],
+                    targets: 4,
+                    type: 'num-fmt',
+                    className: 'dt-right',
+                    render: function(data, type, row) {
+                        var valorFormatado = parseFloat(data).toLocaleString("pt-BR", {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                        });
+                        return `${valorFormatado}`;
+                    }
+                },
+                {
+                    targets: [5, 6],
                     render: function(data, type, row) {
                         return parseFloat(data).toLocaleString("pt-BR", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
                         });
                     },
-                },
-                {
-                    targets: 9, // Índice da coluna "Unidade"
-                    visible: false, // Oculta a coluna "Unidade" da visualização
-                    searchable: false
                 }
             ],
             columns: [{
@@ -198,57 +208,20 @@ if (!empty($server_error)) {
                     data: 'filial'
                 },
                 {
-                    data: 'numeroCompra'
-                },
-                {
-                    data: 'dataCompra',
-                    "render": function(data, type, row) {
-                        return moment(data).format('DD/MM/YYYY');
-                    }
-                },
-                {
                     data: 'quantidade'
                 },
                 {
-                    data: 'precoUnitario'
+                    data: 'mediaDiasAtraso'
                 },
                 {
-                    data: 'totalCompra'
+                    data: 'mediaValorCompra'
                 },
                 {
                     data: 'totalPago'
-                },
-                {
-                    data: 'unidade'
                 }
             ]
         });
 
-        $("#nomeProdutor").autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: "/cadastro/produtor_locate",
-                    type: "GET",
-                    data: {
-                        term: request.term
-                    },
-                    success: function(data) {
-                        response($.map(data, function(item) {
-                            return {
-                                label: item.nome,
-                                value: item.nome,
-                                id: item.codigo
-                            };
-                        }));
-                    }
-                });
-            },
-
-            select: function(event, ui) {
-                $("#produtor").val(ui.item.id);
-            },
-            minLength: 2
-        });
 
         $("#nomeProduto").autocomplete({
             source: function(request, response) {
@@ -284,15 +257,97 @@ if (!empty($server_error)) {
 
         // Recarrega a tabela ao clicar no botão
         $('#btnPesquisa').on('click', function() {
+            var produto = $('#produto').val();
+            if (!produto || produto <= 0) {
+                toastr.error('Por favor, informe o produto.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            var filial = $('#filial').val();
+            if (!filial || filial <= 0) {
+                toastr.error('Por favor, informe a filial.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+
             table.ajax.reload(null, false); // O 'false' mantém a página de paginação atual
         });
 
 
-        $("#nomeProdutor").on('change keyup', function() {
+        $("#filial").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "/cadastro/filial_locate",
+                    type: "GET",
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.descricao,
+                                value: item.descricao,
+                                id: item.descricao
+                            };
+                        }));
+                    }
+                });
+            },
+
+            select: function(event, ui) {
+                $("#filial").val(ui.item.id);
+            },
+            minLength: 2
+        });
+
+        $("#nomeComprador").on('change keyup', function() {
             if ($(this).val() === '') {
-                $("#produtor").val(''); // Limpa o campo #produto
+                $("#comprador").val(''); // Limpa o campo #produto
             }
         });
+
+        $("#nomeComprador").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "/cadastro/comprador_locate",
+                    type: "GET",
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.nome_completo,
+                                value: item.nome_completo,
+                                id: item.username
+                            };
+                        }));
+                    }
+                });
+            },
+            select: function(event, ui) {
+                $("#comprador").val(ui.item.id);
+            },
+            minLength: 2
+        });
+
+
 
 
     })

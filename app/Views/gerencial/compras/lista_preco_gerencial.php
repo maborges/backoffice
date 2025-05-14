@@ -30,13 +30,14 @@
                                 <input type="search" class="form-control form-control-sm" name="nomeProduto" id="nomeProduto" value="<?= $nomeProduto ?>">
                                 <input type="hidden" name="produto" id="produto" value="<?= $produto ?>">
                             </div>
-
+                            <!--
+                            /* A pedido do Saulo em 09/05/2025
                             <div class="form-group col-3">
                                 <label for="nomeProdutor">Produtor</label>
                                 <input type="text" class="form-control form-control-sm" name="nomeProdutor" id="nomeProdutor" value="<?= $nomeProdutor ?>">
                                 <input type="hidden" name="produtor" id="produtor" value="<?= $produtor ?>">
                             </div>
-
+                            -->
                             <div class="form-group col-2">
                                 <label for="filial">Filial</label>
                                 <input type="text" class="form-control form-control-sm" name="filial" id="filial" value="<?= $filial ?>">
@@ -511,14 +512,84 @@ if (!empty($server_error)) {
             minLength: 2
         });
 
-
         // Recarrega a tabela ao clicar no botão
         $('#btnPesquisa').on('click', function() {
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+
+            if (!startDate || !endDate) {
+                toastr.error('Por favor, verifique se ambas as datas são válidas.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            var startDateObj = new Date(startDate);
+            var endDateObj = new Date(endDate);
+
+            if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+                toastr.error('Por favor, insira datas válidas.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            if (startDateObj > endDateObj) {
+                toastr.error('A data inicial não pode ser maior que a data final.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+
+            var produto = $('#produto').val();
+            if (!produto || produto <= 0) {
+                toastr.error('Por favor, informe o produto.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+            /* A pedido do Saulo em 09/05/2025
+            var produtor = $('#produtor').val();
+            if (!produtor || produtor <= 0) {
+                toastr.error('Por favor, informe o produtor.', 'Erro', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right',
+                    timeOut: '5000',
+                    extendedTimeOut: '2000',    
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                });
+                return;
+            }
+            */
+
             table.ajax.reload(null, false); // O 'false' mantém a página de paginação atual
         });
-
-
-
 
     })
 </script>

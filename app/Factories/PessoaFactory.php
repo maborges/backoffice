@@ -15,7 +15,7 @@ class PessoaFactory
      */
     public static function create(array $data): Pessoa
     {
-        if (isset($data['classificacao_1']) && $data['classificacao_1'] == 63) {
+        if (isset($data['categoria_pessoa']) &&  in_array($data['categoria_pessoa'], ['P','PC','C'])) {
             return new Produtor($data);
         }
 

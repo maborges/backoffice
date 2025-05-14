@@ -23,7 +23,7 @@ class CompradorController extends BaseController
             'server_success' => session()->getFlashdata('server_success'),
             'server_warning' => session()->getFlashdata('server_warning'),
             'datatables'     => true,
-            'compradores'    => $this->compradorModel->get
+            'compradores'    => $this->compradorModel->getCompradores()
         ];
 
         return view('cadastro/comprador/index', $data);

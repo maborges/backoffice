@@ -25,10 +25,15 @@
                                     value="<?= $endDate ?>">
                             </div>
 
-                            <div class="form-group col-2">
+                            <div class="form-group col-3">
                                 <label for="nomeProduto">Produto</label>
                                 <input type="search" class="form-control form-control-sm" name="nomeProduto" id="nomeProduto" value="<?= $nomeProduto ?>">
                                 <input type="hidden" name="produto" id="produto" value="<?= $produto ?>">
+                            </div>
+
+                            <div class="form-group col-2">
+                                <label for="filial">Filial</label>
+                                <input type="text" class="form-control form-control-sm" name="filial" id="filial" value="<?= $filial ?>">
                             </div>
 
                             <div class="form-group col-1 d-flex align-items-end">
@@ -56,6 +61,17 @@
                                 <th>Tempo Puxar</th>
                             </tr>
                         </thead>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -89,6 +105,17 @@
                                 <th>Tempo Puxar</th>
                             </tr>
                         </thead>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -137,14 +164,14 @@
             <div class="col-md-6">
                 <div class="card card-body shadow-sm">
                     <div class="chart">
-                        <canvas id="chartDashboardFilialClassificacao" style="min-height: 250px; height: 250px; max-height: auto; max-width: 100%;"></canvas>
+                        <canvas id="chartDashboardClassificacao" style="min-height: 250px; height: 250px; max-height: auto; max-width: 100%;"></canvas>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card card-body shadow-sm">
                     <div class="chart">
-                        <canvas id="chartDashboardCompradorClassificacao" style="min-height: 250px; height: 250px; max-height: auto; max-width: 100%;"></canvas>
+                        <canvas id="chartDashboardCategoria" style="min-height: 250px; height: 250px; max-height: auto; max-width: 100%;"></canvas>
                     </div>
                 </div>
             </div>
@@ -175,6 +202,68 @@
                     i :
                     0;
             };
+
+            // Total Volume
+            let totalVolume = api
+                .column(1)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+            // Média Ticket Médio
+            let totalTicket = api
+                .column(2)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+            let countTicket = api.column(2).data().length;
+            let mediaTicket = countTicket > 0 ? totalTicket / countTicket : 0;
+
+            // Total Clientes Ativos
+            let totalClientes = api
+                .column(3)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+            // Média Preço Médio
+            let totalPreco = api
+                .column(4)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+            let countPreco = api.column(4).data().length;
+            let mediaPreco = countPreco > 0 ? totalPreco / countPreco : 0;
+
+            // Total Volume Puxar
+            let totalVolumePuxar = api
+                .column(5)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+            // Média Tempo Puxar
+            let totalTempo = api
+                .column(6)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+            let countTempo = api.column(6).data().length;
+            let mediaTempoPuxar = countTempo > 0 ? totalTempo / countTempo : 0;
+
+            // Atualiza o rodapé
+            $(api.column(1).footer()).html(
+                '<strong>' + totalVolume.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+            );
+            $(api.column(2).footer()).html(
+                '<strong>' + mediaTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+            );
+            $(api.column(3).footer()).html(
+                '<strong>' + totalClientes.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+            );
+            $(api.column(4).footer()).html(
+                '<strong>' + mediaPreco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+            );
+            $(api.column(5).footer()).html(
+                '<strong>' + totalVolumePuxar.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+            );
+            $(api.column(6).footer()).html(
+                '<strong>' + mediaTempoPuxar.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+            );
         },
         caption: 'Resumo Comprador',
         paging: false,
@@ -199,6 +288,7 @@
                 d.startDate = $('#startDate').val();
                 d.endDate = $('#endDate').val();
                 d.produto = $('#produto').val();
+                d.filial = $('#filial').val();
             },
             dataSrc: function(json) {
                 if (json.error) {
@@ -321,6 +411,68 @@
                     i :
                     0;
             };
+
+            // Total Volume
+            let totalVolume = api
+                .column(1)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+            // Média Ticket Médio
+            let totalTicket = api
+                .column(2)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+            let countTicket = api.column(2).data().length;
+            let mediaTicket = countTicket > 0 ? totalTicket / countTicket : 0;
+
+            // Total Clientes Ativos
+            let totalClientes = api
+                .column(3)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+            // Média Preço Médio
+            let totalPreco = api
+                .column(4)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+            let countPreco = api.column(4).data().length;
+            let mediaPreco = countPreco > 0 ? totalPreco / countPreco : 0;
+
+            // Total Volume Puxar
+            let totalVolumePuxar = api
+                .column(5)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+            // Média Tempo Puxar
+            let totalTempo = api
+                .column(6)
+                .data()
+                .reduce((a, b) => intVal(a) + intVal(b), 0);
+            let countTempo = api.column(6).data().length;
+            let mediaTempoPuxar = countTempo > 0 ? totalTempo / countTempo : 0;
+
+            // Atualiza o rodapé
+            $(api.column(1).footer()).html(
+                '<strong>' + totalVolume.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+            );
+            $(api.column(2).footer()).html(
+                '<strong>' + mediaTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+            );
+            $(api.column(3).footer()).html(
+                '<strong>' + totalClientes.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+            );
+            $(api.column(4).footer()).html(
+                '<strong>' + mediaPreco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+            );
+            $(api.column(5).footer()).html(
+                '<strong>' + totalVolumePuxar.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+            );
+            $(api.column(6).footer()).html(
+                '<strong>' + mediaTempoPuxar.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+            );
         },
         caption: 'Resumo Filial',
         paging: false,
@@ -500,6 +652,7 @@
                 d.startDate = $('#startDate').val();
                 d.endDate = $('#endDate').val();
                 d.produto = $('#produto').val();
+                d.filial = $('#filial').val();
             },
             dataSrc: function(json) {
                 if (json.error) {
@@ -777,8 +930,8 @@
         // Atualiza os gráficos
         loadChartDashboardFilialData();
         loadChartDashboardCompradorData();
-        loadChartDashboardFilialClassificacao();
-        loadChartDashboardCompradorClassificacao();
+        loadChartDashboardClassificacao();
+        loadChartDashboardCategoria();
     });
 
     $("#nomeProduto").autocomplete({
@@ -807,6 +960,32 @@
         minLength: 2
     });
 
+    $("#filial").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "/cadastro/filial_locate",
+                type: "GET",
+                data: {
+                    term: request.term
+                },
+                success: function(data) {
+                    response($.map(data, function(item) {
+                        return {
+                            label: item.descricao,
+                            value: item.descricao,
+                            id: item.descricao
+                        };
+                    }));
+                }
+            });
+        },
+
+        select: function(event, ui) {
+            $("#filial").val(ui.item.id);
+        },
+        minLength: 2
+    });
+
     $("#nomeProduto").on('change keyup', function() {
         if ($(this).val() === '') {
             $("#produto").val(''); // Limpa o campo #produto
@@ -822,7 +1001,8 @@
             dataType: 'json',
             data: {
                 endDate: $('#endDate').val(),
-                produto: $('#produto').val()
+                produto: $('#produto').val(),
+                filial: $('#filial').val()
             },
             success: function(data) {
                 showChartClassificacao(data);
@@ -956,18 +1136,19 @@
         });
     }
 
-    let chartDashboardFilialClassificacao;
-    function loadChartDashboardFilialClassificacao() {
-        loadChartData("<?= base_url('gerencial/dashboard_filiais_classificacao') ?>", {
+    let chartDashboardClassificacao;
+    function loadChartDashboardClassificacao() {
+        loadChartData("<?= base_url('gerencial/dashboard_classificacao') ?>", {
             endDate: $('#endDate').val(),
-            produto: $('#produto').val()
+            produto: $('#produto').val(),
+            filial: $('#filial').val()
         }, function(data) {
-            chartDashboardFilialClassificacao = createChart(chartDashboardFilialClassificacao, 'chartDashboardFilialClassificacao', data, {
+            chartDashboardClassificacao = createChart(chartDashboardClassificacao, 'chartDashboardClassificacao', data, {
                 responsive: true,
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Volume de Compras por Filial/Classificação no Período'
+                        text: 'Volume de Compras por Classificação no Período'
                     },
                     autocolors: {
                         mode: 'data'
@@ -991,18 +1172,19 @@
         });
     }
 
-    let chartDashboardCompradorClassificacao;
-    function loadChartDashboardCompradorClassificacao() {
-        loadChartData("<?= base_url('gerencial/dashboard_comprador_classificacao') ?>", {
+    let chartDashboardCategoria;
+    function loadChartDashboardCategoria() {
+        loadChartData("<?= base_url('gerencial/dashboard_categoria') ?>", {
             endDate: $('#endDate').val(),
-            produto: $('#produto').val()
+            produto: $('#produto').val(),
+            filial: $('#filial').val()
         }, function(data) {
-            chartDashboardCompradorClassificacao = createChart(chartDashboardCompradorClassificacao, 'chartDashboardCompradorClassificacao', data, {
+            chartDashboardCategoria = createChart(chartDashboardCategoria, 'chartDashboardCategoria', data, {
                 responsive: true,
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Top 10 - Volume de Compras por Comprador/Classificação no Período'
+                        text: 'Volume de Compras por Categoria no Período'
                     },
                     autocolors: {
                         mode: 'data'

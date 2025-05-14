@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Entities\Produto;
 use App\Models\ComprasModel;
 
 class ComprasController extends BaseController
@@ -24,35 +25,30 @@ class ComprasController extends BaseController
     public function listaEntregasPendentes()
     {
         // Obtém os parâmetros nomeados da query string
-        $produto = '';
-        $produtor = '';
-        $nomeProduto = '';
-        $nomeProdutor = '';
-
-
         $data = [
             'title'             => SELF::TITULO,
             'page'              => 'Lista de Entregas Pendentes',
             'server_success'    => session()->getFlashdata('server_success'),
             'server_warning'    => session()->getFlashdata('server_warning'),
             'datatables'        => true,
-            'produto'           => $produto,
-            'nomeProduto'       => $nomeProduto,
-            'produtor'          => $produtor,
-            'nomeProdutor'      => $nomeProdutor
+            'produto'           => '',
+            'nomeProduto'       => '',
+            'filial'            => '',
+            'comprador'         => '',
+            'nomeComprador'     => ''
         ];
 
         return view('gerencial/compras/lista_entrega_pendente', $data);
     }
 
-
     public function getEntregaPendente()
     {
         // Obtém os parâmetros nomeados da query string
-        $produto  = $this->request->getPost('produto') ?? null;
-        $produtor = $this->request->getPost('produtor') ?? null;
+        $produto  = $this->request->getPost('produto');
+        $filial = $this->request->getPost('filial');
+        $comprador = $this->request->getPost('comprador');
 
-        $entregasPendentes = $this->comprasModel->getEntregaPendente($produto, $produtor);
+        $entregasPendentes = $this->comprasModel->getEntregaPendente($produto, $filial, $comprador);
 
         return $this->response->setJSON(['data' => $entregasPendentes]);
     }
@@ -76,8 +72,8 @@ class ComprasController extends BaseController
             'endDate'           => $endDate,
             'produto'           => '',
             'nomeProduto'       => '',
-            'produtor'          => '',
-            'nomeProdutor'      => ''
+            'comprador'         => '',
+            'nomeComprador'     => ''
         ];
 
         return view('gerencial/compras/lista_gap_compra_entrega', $data);
@@ -86,59 +82,17 @@ class ComprasController extends BaseController
 
     public function getGapCompraEntrega()
     {
-        $startDate = $this->request->getPost('startDate') ?? '2024-08-01';
-        $endDate   = $this->request->getPost('endDate') ?? '2024-11-30';
-        $produto   = $this->request->getPost('produto') ?? 2;
-        $produtor  = $this->request->getPost('produtor') ?? 10961;
-        $filial    = '';
+        $startDate  = $this->request->getPost('startDate');
+        $endDate    = $this->request->getPost('endDate');
+        $produto    = $this->request->getPost('produto');
+        $comprador  = $this->request->getPost('comprador');
 
-        // Validar o período
-        list($startDate,$endDate, $produto, $produtor, $filial) = $this->getGapCompraEntregaValida($startDate, $endDate, $produto, $produtor, $filial);
-
-        $gapEntrega = $this->comprasModel->getGapCompraEntrega($startDate, $endDate, $produto, $produtor);
+        $gapEntrega = $this->comprasModel->getGapCompraEntrega($startDate, $endDate, $produto, $comprador);
 
         return $this->response->setJSON(['data' => $gapEntrega]);
     }
 
-    private function getGapCompraEntregaValida($startDate, $endDate, $produto, $produtor, $filial = null)
-    {
-        if ($startDate && $endDate) {
-            $startDateObj = new \DateTime($startDate);
-            $endDateObj = new \DateTime($endDate);
-
-            if ($startDateObj > $endDateObj) {
-                $startDateObj = $endDateObj;
-                throw new \InvalidArgumentException('Data inicial não pode ser maior que a data final.');
-            }
-
-        } else {
-            // Se as datas não forem informadas, definir o período padrão
-            $endDateObj = new \DateTime('last day of previous month');
-            $startDateObj = (clone $endDateObj)->modify('-24 months');
-
-            $startDate = $startDateObj->format('Y-m-d');
-            $endDate = $endDateObj->format('Y-m-d');
-        }
-
-        return [$startDate, $endDate, $produto, $produtor, $filial];
-    }
-
-    public function getPrecoGerencial()
-    {
-        $startDate = $this->request->getPost('startDate') ?? '2024-08-01';
-        $endDate   = $this->request->getPost('endDate') ?? '2024-11-30';
-        $produto   = $this->request->getPost('produto');
-        $produtor  = $this->request->getPost('produtor');
-        $filial    = $this->request->getPost('filial');
-
-        // Validar o período
-        list($startDate, $endDate, $produto, $produtor, $filial) = $this->getGapCompraEntregaValida($startDate, $endDate, $produto, $produtor, $filial);
-
-        $precoGerencial = $this->comprasModel->getPrecoGerencial($startDate, $endDate, $produto, $produtor, $filial);
- 
-        return $this->response->setJSON(['data' => $precoGerencial]);
-    }
-
+    // View
     public function listaPrecoGerencial()
     {
         // Se as datas não forem informadas, definir o período padrão
@@ -156,14 +110,35 @@ class ComprasController extends BaseController
             'datatables'        => true,
             'startDate'         => $startDate,
             'endDate'           => $endDate,
-            'produto'           => '',
+            'produto'           => -1,
             'nomeProduto'       => '',
-            'produtor'          => '',
+            'produtor'          => -1,
             'nomeProdutor'      => '',
             'filial'            => ''
         ];
 
         return view('gerencial/compras/lista_preco_gerencial', $data);
+    }
+
+    // Controller 
+    public function getPrecoGerencial()
+    {
+        $startDate = $this->request->getPost('startDate');
+        $endDate   = $this->request->getPost('endDate');
+        $produto   = $this->request->getPost('produto');
+        $produtor  = $this->request->getPost('produtor');
+        $filial    = $this->request->getPost('filial');
+
+        /*
+        list($startDate, $endDate) = $this->validaPeriodo($startDate, $endDate);
+        list($produto) = $this->validaProduto($produto);
+        list($produtor) = $this->validaProdutor($produtor);
+        list($filial) = $this->validaFilial($filial); 
+        */
+
+        $precoGerencial = $this->comprasModel->getPrecoGerencial($startDate, $endDate, $produto, $produtor, $filial);
+ 
+        return $this->response->setJSON(['data' => $precoGerencial]);
     }
 
     public function getPrecoGerencialResumo()
@@ -173,9 +148,6 @@ class ComprasController extends BaseController
         $produto   = $this->request->getPost('produto');
         $produtor  = $this->request->getPost('produtor');
         $filial    = $this->request->getPost('filial');
-
-        // Validar o período
-        list($startDate, $endDate, $produto, $produtor, $filial) = $this->getGapCompraEntregaValida($startDate, $endDate, $produto, $produtor, $filial);
 
         $resumoGerencial = $this->comprasModel->getPrecoGerencialResumo($startDate, $endDate, $produto, $produtor, $filial);
 
@@ -189,6 +161,7 @@ class ComprasController extends BaseController
         $startDate = $this->request->getPost('startDate');
         $endDate   = $this->request->getPost('endDate');
         $produto   = $this->request->getPost('produto');
+        $filial    = $this->request->getPost('filial');
 
         if ($produto == '-2') {
             return $this->response->setJSON([
@@ -199,7 +172,7 @@ class ComprasController extends BaseController
         // Validar o período
         list($startDate, $endDate, $produto) = $this->validaParametroDashboard($startDate, $endDate, $produto);
 
-        $resumoComprador = $this->comprasModel->getResumoComprador($startDate, $endDate, $produto);
+        $resumoComprador = $this->comprasModel->getResumoComprador($startDate, $endDate, $produto, $filial);
 
         return $this->response->setJSON([
             'data' => $resumoComprador
@@ -234,6 +207,7 @@ class ComprasController extends BaseController
         $startDate = $this->request->getPost('startDate');
         $endDate   = $this->request->getPost('endDate');
         $produto   = $this->request->getPost('produto');
+        $filial    = $this->request->getPost('filial');
 
         if ($produto == '-2') {
             return $this->response->setJSON([
@@ -244,7 +218,7 @@ class ComprasController extends BaseController
         // Validar o período
         list($startDate, $endDate, $produto) = $this->validaParametroDashboard($startDate, $endDate, $produto);
 
-        $resumo = $this->comprasModel->getTop10Cliente($startDate, $endDate, $produto);
+        $resumo = $this->comprasModel->getTop10Cliente($startDate, $endDate, $produto, $filial);
 
         return $this->response->setJSON([
             'data' => $resumo
@@ -276,11 +250,12 @@ class ComprasController extends BaseController
     public function getResumoClassificacao() {
         $endDate   = $this->request->getPost('endDate') ?? date('Y-m-d');
         $startDate = $endDate; // Somenta para deixar os parâmetros de validação compativeis
-        $produto   = $this->request->getPost('produto') ?? 2;
+        $produto   = $this->request->getPost('produto') ?? '';
+        $filial    = $this->request->getPost('filial') ?? '';
 
         list($startDate, $endDate, $produto) = $this->validaParametroDashboard($startDate, $endDate, $produto);
 
-        $result =  $this->comprasModel->getResumoClassificacao($endDate, $produto);
+        $result =  $this->comprasModel->getResumoClassificacao($endDate, $produto, $filial);
         if (!$result) {
             return $this->response->setJSON([
                 'error' => 'Erro ao obter o resumo da classificação.'
@@ -321,7 +296,6 @@ class ComprasController extends BaseController
         return $this->response->setJSON($result);
     }
 
-
     private function validaParametroDashboard($startDate, $endDate, $produto)
     {
         if ($startDate && $endDate) {
@@ -343,14 +317,16 @@ class ComprasController extends BaseController
         return [$startDate, $endDate, $produto];
     }
 
-    public function getDashboardFiliaisClassificacao() {
+    public function getDashboardClassificacao() {
         $endDate   = $this->request->getPost('endDate') ?? date('Y-m-d');
         $startDate = $endDate; // Somenta para deixar os parâmetros de validação compativeis
         $produto   = $this->request->getPost('produto') ?? -2;
+        $filial    = $this->request->getPost('filial') ?? '';
+
 
         list($startDate, $endDate, $produto) = $this->validaParametroDashboard($startDate, $endDate, $produto);
 
-        $result =  $this->comprasModel->getDashboardFiliaisClassificacao($endDate, $produto);
+        $result =  $this->comprasModel->getDashboardClassificacao($endDate, $produto, $filial);
         if (!$result) {
             return $this->response->setJSON([
                 'error' => 'Erro ao obter o resumo da classificação.'
@@ -359,14 +335,16 @@ class ComprasController extends BaseController
         return $this->response->setJSON($result);
     }
 
-    public function getDashboardCompradorClassificacao() {
+    public function getDashboardCategoria() {
         $endDate   = $this->request->getPost('endDate') ?? date('Y-m-d');
         $startDate = $endDate; // Somenta para deixar os parâmetros de validação compativeis
         $produto   = $this->request->getPost('produto') ?? -2;
+        $filial    = $this->request->getPost('filial') ?? '';
+
 
         list($startDate, $endDate, $produto) = $this->validaParametroDashboard($startDate, $endDate, $produto);
 
-        $result =  $this->comprasModel->getDashboardCompradorClassificacao($endDate, $produto);
+        $result =  $this->comprasModel->getDashboardCategoria($endDate, $produto, $filial);
         if (!$result) {
             return $this->response->setJSON([
                 'error' => 'Erro ao obter o resumo da classificação.'

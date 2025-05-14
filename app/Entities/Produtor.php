@@ -12,7 +12,7 @@ class Produtor extends Entity
     public function __construct(array $data = [])
     {
         parent::__construct($data);
-        $this->classificacao_1 = 63; // Garantir que o tipo do registro seja 63 - Produtor
+        $this->categoria_pessoa = 'P' || $this->categoria_pessoa = 'PC' || $this->categoria_pessoa = 'C'; // Garantir que o tipo do registro seja 63 - Produtor
     }
 
     /**

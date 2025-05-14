@@ -108,6 +108,13 @@
                         </li>
 
                         <li class="nav-item">
+                            <a href="<?= site_url('/cadastro/filial_comprador') ?>" class="nav-link">
+                                <i class="fa-solid fa-users-viewfinder"></i>
+                                <p>Filial x Comprador</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a href="<?= site_url('/gerencial/compra_preco_gerencial') ?>" class="nav-link">
                                 <i class="fa-solid fa-file-invoice-dollar"></i>
                                 <p>Preço Gerencial</p>
@@ -128,6 +135,7 @@
                     </ul>
                 </li>
                 <!-- Certificação -->
+                 <!--
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-copy"></i>
@@ -163,6 +171,7 @@
                         </li>
                     </ul>
                 </li>
+                -->
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

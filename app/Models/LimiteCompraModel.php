@@ -90,7 +90,6 @@ class LimiteCompraModel extends Model
     public function validateProdutor($idProdutor)
     {
         $produtorModel = new ProdutorModel();
-        // #b        return $produtorModel->where(['codigo' => $idProdutor, 'estado_registro' => 'ATIVO', 'classificacao_1' => '63'])->first() !== null;
         $produtor = $produtorModel->select('codigo')->where(['codigo' => $idProdutor])->first();
         return $produtor !== null;
     }

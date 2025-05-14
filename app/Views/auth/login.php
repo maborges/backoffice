@@ -32,7 +32,7 @@
                         <span class="fas fa-lock app-primary-color"></span>
                     </div>
                 </div>
-                <input type="password" name='password' id='password' class="form-control" placeholder="Senha" value="Num$ey01">
+                <input type="password" name='password' id='password' class="form-control" placeholder="Senha" value="<?= old('password') ?>">
             </div>
             <?= displayError('password', $validation_errors) ?>
 

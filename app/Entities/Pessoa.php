@@ -12,6 +12,7 @@ class Pessoa extends Entity
         'tipo'            => null,
         'classificacao_1' => null,
         'estado_registro' => null,
+        'categoria_pessoa' => null,
     ];
 
     // Mapea os campos da tabela do banco para campos da entidade

@@ -56,10 +56,12 @@ $routes->post('gerencial/dashboard_filiais', 'ComprasController::getDashboardFil
 //$routes->get('gerencial/dashboard_filiais', 'ComprasController::getDashboardFiliais');
 $routes->post('gerencial/dashboard_comprador', 'ComprasController::getDashboardComprador');
 //$routes->get('gerencial/dashboard_comprador', 'ComprasController::getDashboardComprador');
-$routes->post('gerencial/dashboard_filiais_classificacao', 'ComprasController::getDashboardFiliaisClassificacao');
-//$routes->get('gerencial/dashboard_filiais_classificacao', 'ComprasController::getDashboardFiliaisClassificacao');
-$routes->post('gerencial/dashboard_comprador_classificacao', 'ComprasController::getDashboardCompradorClassificacao');
-//$routes->get('gerencial/dashboard_comprador_classificacao', 'ComprasController::getDashboardCompradorClassificacao');
+$routes->post('gerencial/dashboard_classificacao', 'ComprasController::getDashboardClassificacao');
+//$routes->get('gerencial/dashboard_classificacao', 'ComprasController::getDashboardClassificacao');
+
+
+$routes->post('gerencial/dashboard_categoria', 'ComprasController::getDashboardCategoria');
+//$routes->get('gerencial/dashboard_categoria', 'ComprasController::getDashboardCategoria');
 
 
 // Limite de Compras
@@ -79,17 +81,18 @@ $routes->post('gerencial/limite_credito_atualiza', 'LimiteCreditoController::atu
 $routes->get('gerencial/limite_credito_exclui/(:alphanum)', 'LimiteCreditoController::exclui/$1');
 
 // Compras
-//$routes->get('gerencial/compra_get_entrega_pendentes', 'ComprasController::getEntregaPendente');
+//$routes->get('gerencial/compra_get_entrega_pendente', 'ComprasController::getEntregaPendente');
 $routes->post('gerencial/compra_get_entrega_pendente', 'ComprasController::getEntregaPendente');
 $routes->get('gerencial/compra_entrega_pendente', 'ComprasController::listaEntregasPendentes');
 
 $routes->post('gerencial/compra_get_gap_entrega', 'ComprasController::getGapCompraEntrega');
+$routes->get('gerencial/compra_get_gap_entrega', 'ComprasController::getGapCompraEntrega');
 $routes->get('gerencial/compra_gap_compra_entrega', 'ComprasController::listaGapCompraEntrega');
 
 $routes->post('gerencial/compra_get_preco_gerencial', 'ComprasController::getPrecoGerencial');
 $routes->get('gerencial/compra_preco_gerencial', 'ComprasController::listaPrecoGerencial');
 
-$routes->post('gerencial/compra_get_preco_gerencial_resumo', 'ComprasController::getPrecoGerencialResumo');
+//$routes->post('gerencial/compra_get_preco_gerencial_resumo', 'ComprasController::getPrecoGerencialResumo');
 $routes->get('gerencial/compra_get_preco_gerencial_resumo', 'ComprasController::getPrecoGerencialResumo');
 
 
@@ -125,4 +128,12 @@ $routes->get('cadastro/comprador_locate', 'CompradorController::findLikeName');
 
 // Filiais
 $routes->get('cadastro/filial_locate', 'FilialController::findLikeName');
+
+// Filial x Comprador
+$routes->get('cadastro/filial_comprador', 'FilialCompradorController::index');
+$routes->get('cadastro/filial_comprador_cria', 'FilialCompradorController::cria');
+$routes->post('cadastro/filial_comprador_grava', 'FilialCompradorController::grava');
+$routes->get('cadastro/filial_comprador_edita/(:alphanum)/(:alphanum)', 'FilialCompradorController::edita/$1/$2');
+$routes->post('cadastro/filial_comprador_atualiza', 'FilialCompradorController::atualiza');
+$routes->get('cadastro/filial_comprador_exclui/(:alphanum)/(:alphanum)', 'FilialCompradorController::exclui/$1/$2');
 

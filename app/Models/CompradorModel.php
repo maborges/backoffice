@@ -32,7 +32,7 @@ class CompradorModel extends UsuarioModel
                                         from cadastro_pessoa 
                                         where comprador is not null
                                         and estado_registro = \'ATIVO\')) x', 'x.comprador = u.username');
-        $builder->where('u.estado_registro', 'ATIVO');
+        $builder->where('u.estado_registro', 'ATIVO')->orderBy('u.nome_completo');
         $query = $builder->get();
         return $query->getResult();
     }

@@ -4,18 +4,17 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class RegiaoModel extends Model
+class FilialCompradorModel extends Model
 {
-    protected $table            = 'regiao';
-    protected $primaryKey       = 'id';
+    protected $table            = 'filial_comprador';
+    protected $primaryKey       = 'codigo';
     protected $useAutoIncrement = true;
     protected $returnType       = 'object';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields = [
-        'nome_regiao',
-        'criado_por',
-        'atualizado_por'
+        'filial',
+        'comprador'
     ];
 
     protected bool $allowEmptyInserts = false;
@@ -25,11 +24,7 @@ class RegiaoModel extends Model
     protected array $castHandlers = [];
 
     // Dates
-    protected $useTimestamps = true;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'criado_em';
-    protected $updatedField  = 'atualizado_em';
-    protected $deletedField  = 'excluido_em';
+    protected $useTimestamps = false;
 
     // Validation
     protected $validationRules      = [];
@@ -42,7 +37,6 @@ class RegiaoModel extends Model
     protected $beforeInsert   = [];
     protected $afterInsert    = [];
     protected $beforeUpdate   = [];
-    protected $afterUpdate    = [];
     protected $beforeFind     = [];
     protected $afterFind      = [];
     protected $beforeDelete   = [];
@@ -52,14 +46,20 @@ class RegiaoModel extends Model
     {
         if (in_array($operation, [OR_INSERT, OR_UPDATE])) {
             // input fields
-            $resultFields['nome_regiao'] = [
-                'label' => 'Nome da Região',
+            $resultFields['filial'] = [
+                'label' => 'Filial',
                 'rules' => 'required',
                 'errors' => [
                     'required' => FIELD_MESSAGE_REQUIRED
                 ]
             ];
-
+            $resultFields['comprador'] = [
+                'label' => 'Comprador',
+                'rules' => 'required',
+                'errors' => [
+                    'required' => FIELD_MESSAGE_REQUIRED
+                ]
+            ];
         }
 
         return $resultFields;
@@ -72,4 +72,15 @@ class RegiaoModel extends Model
                     ->countAllResults() > 0;
     }
 
+    public function getList()
+    {
+        $builder = $this->db->table('filial_comprador fc');
+        $builder->select('fc.filial, fc.comprador, f.apelido, u.primeiro_nome');
+        $builder->join('filiais f', 'f.codigo = fc.filial', 'inner');
+        $builder->join('usuarios u', 'u.username = fc.comprador', 'inner');
+        $builder->where('f.estado_registro', 'ATIVO');
+        $builder->orderBy('f.apelido, u.primeiro_nome');
+        
+        return $builder->get()->getResult();
+    }
 }
