@@ -1,2 +1,5 @@
 vendor/
 writable/
+.env
+*.log
+/public/.htaccess

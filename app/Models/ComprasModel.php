@@ -73,7 +73,12 @@ class ComprasModel extends Model
     public function getEntregaPendente($produto = null, $filial = null, $comprador = null)
     {
         // produtores com entrega pendente
-        $builder = $this->select('cpr.fornecedor produtor, cpr.fornecedor_print nomeProdutor, cpr.cod_produto produto, cpr.produto nomeProduto, cpr.unidade, cpr.filial,
+        $builder = $this->select('cpr.fornecedor produtor, 
+                                  cpr.fornecedor_print nomeProdutor, 
+                                  cpr.cod_produto produto, 
+                                  cpr.produto nomeProduto, 
+                                  cpr.unidade, 
+                                  cpr.filial,
                                   SUM(CASE 
                                         WHEN cpr.movimentacao IN ("ENTRADA", "TRANSFERENCIA_ENTRADA", "ENTRADA_FUTURO") THEN cpr.quantidade 
                                         ELSE -cpr.quantidade 
@@ -84,7 +89,7 @@ class ComprasModel extends Model
             ->where('cpr.cod_produto', $produto)
             ->where('cpr.filial', $filial);
 
-        if ($comprador) {   
+        if ($comprador) {
             $builder->join('cadastro_pessoa pes', 'pes.codigo = cpr.fornecedor', 'inner');
             $builder->where('pes.comprador', $comprador);
         }
@@ -198,21 +203,128 @@ class ComprasModel extends Model
         return $resultFields;
     }
 
-    public function getSaldoAnterior($produto, $produtor, $startDate)
-    {
+    public function getQuantidadeGerencialCompras(
+        $produto,
+        $startDate,
+        $endDate,
+        $filial
+    ) {
+        // Construir SQL seguindo o padrão das outras funções que funcionam
+        $sqlFilial = "";
+
+        if (isset($filial) && $filial !== '') {
+            $sqlFilial = " AND b.codigo = $filial ";
+        }
+
+        $sql = "SELECT a.data_compra, 
+                       SUM(a.quantidade) as compra,
+                       SUM(a.preco_unitario * a.quantidade) / SUM(a.quantidade) as media_ponderada,
+                       AVG(a.valor_media_gerencial) as media_gerencial
+                  FROM compras a
+                       INNER JOIN filiais b
+                         ON b.descricao = a.filial
+                 WHERE a.estado_registro = 'ATIVO'
+                   AND a.movimentacao = 'COMPRA'
+                   AND a.cod_produto = $produto
+                   AND a.data_compra BETWEEN '$startDate' AND '$endDate'
+                   $sqlFilial
+                GROUP BY a.data_compra 
+                ORDER BY a.data_compra";
+
+        $query = $this->query($sql);
+        $result = $query->getResultObject();
+       
+        return $result;
+    }
+
+    public function getSaldoAnterior(
+        string $produto,
+        string $startDate,
+        ?int $produtor = null,
+        ?string $filial = null
+    ) {
+        $builder = $this->select('SUM(CASE 
+                                        WHEN movimentacao IN ("ENTRADA", "TRANSFERENCIA_ENTRADA", "ENTRADA_FUTURO") THEN quantidade 
+                                        ELSE -quantidade 
+                                      END
+                                     ) AS saldo_anterior')
+                        ->where('estado_registro', 'ATIVO')
+                        ->whereIn('movimentacao', [
+                            'ENTRADA',
+                            'TRANSFERENCIA_ENTRADA',
+                            'ENTRADA_FUTURO',
+                            'COMPRA',
+                            'TRANSFERENCIA_SAIDA',
+                            'SAIDA',
+                            'SAIDA_FUTURO'
+                        ])
+                        ->where('cod_produto', $produto)
+                        ->where('data_compra <', $startDate);
+
+        if ($produtor !== null) {
+            $builder->where('fornecedor', $produtor);
+        }
+
+        if ($filial !== null) {
+            $builder->where('filial', $filial);
+        }
+
+        return $builder->get()->getResultObject();
+    }
+
+    public function getSaldoGerencialAnterior(
+        string $startDate,
+        string $endDate,
+        string $produto,
+        ?string $filial = null
+    ) {
         $builder = $this->select('SUM(CASE 
                                         WHEN movimentacao IN ("ENTRADA", "TRANSFERENCIA_ENTRADA", "ENTRADA_FUTURO") THEN quantidade 
                                         ELSE -quantidade 
                                       END
                                      ) AS saldo_anterior')
             ->where('estado_registro', 'ATIVO')
-            ->whereIn('movimentacao', ['ENTRADA', 'TRANSFERENCIA_ENTRADA', 'ENTRADA_FUTURO', 'COMPRA', 'TRANSFERENCIA_SAIDA', 'SAIDA', 'SAIDA_FUTURO'])
             ->where('cod_produto', $produto)
-            ->where('fornecedor', $produtor)
-            ->where('data_compra <', $startDate);
+            ->where('data_compra >= ', $startDate)
+            ->where('data_compra <= ', $endDate)
+            ->whereIn('movimentacao', [
+                'ENTRADA',
+                'TRANSFERENCIA_ENTRADA',
+                'ENTRADA_FUTURO',
+                'COMPRA',
+                'TRANSFERENCIA_SAIDA',
+                'SAIDA',
+                'SAIDA_FUTURO'
+            ]);
 
-        return $builder->get()->getResultObject();
+        if (isset($filial) && $filial !== '') {
+            $builder->where('filial', $filial);
+        }
+        
+        $result = $builder->get()->getResultObject();
+
+        // Se não encontrou dados, retorna saldo zero
+        if (empty($result)) {
+            return 0;
+        }
+        
+        // Verifica se o primeiro resultado existe e tem o campo saldo_anterior
+        if (!isset($result[0]) || !isset($result[0]->saldo_anterior)) {
+            return 0;
+        }
+        
+        $saldoAnterior = $result[0]->saldo_anterior;
+        
+        // Se saldo_anterior é NULL, retorna 0
+        if ($saldoAnterior === null) {
+            return 0;
+        }
+        
+        $valorFinal = (float) $saldoAnterior;
+        
+        return $valorFinal;
     }
+
 
     public function getEntradasNoPeriodo($produto, $produtor, $startDate, $endDate)
     {
@@ -252,7 +364,9 @@ class ComprasModel extends Model
             $produtor = $record['codigo'];
 
             // Obter saldo anterior
-            $saldoAnterior = $this->getSaldoAnterior($produto, $produtor, $startDate);
+            $saldoAnterior = $this->getSaldoAnterior(produto: $produto, 
+                                                     produtor: $produtor, 
+                                                     startDate: $startDate);
             $saldoAnteriorValor = 0;
 
             if (!empty($saldoAnterior)) {
@@ -319,10 +433,13 @@ class ComprasModel extends Model
         return $comprasPendentes;
     }
 
+    // todo: "Verificar utilização da função"
     private function getGapCompraEntregaProdutor($startDate, $endDate, $produto, $produtor)
     {
         // Obter saldo anterior
-        $saldoAnterior = $this->getSaldoAnterior($produto, $produtor, $startDate);
+        $saldoAnterior = $this->getSaldoAnterior(produto: $produto,
+                                                 produtor: $produtor,
+                                                 startDate: $startDate);
         $saldoAnteriorValor = 0;
 
         if (!empty($saldoAnterior)) {
@@ -387,31 +504,34 @@ class ComprasModel extends Model
             }
         }
 
-        return $comprasPendentes; 
+        return $comprasPendentes;
     }
 
     public function getPrecoGerencial($startDate, $endDate, $produto, $produtor, $filial)
     {
-        $builder = $this->select("pes.nome, cpr.data_compra, cpr.numero_compra, cpr.produto, cpr.quantidade, cpr.valor_total, cpr.filial,
+        $builder = $this->select("pes.nome, 
+                                  cpr.data_compra, 
+                                  cpr.numero_compra, 
+                                  cpr.produto, 
+                                  cpr.quantidade, 
+                                  cpr.valor_total, 
+                                  cpr.filial,
                                   cpr.preco_unitario,
-                                  round(cpr.valor_total * (0.012 * (pes.tipo='PJ')),2) inss, 
-                                  round(cpr.valor_total * (0.001 * (pes.tipo='PJ')),2) rat, 
-                                  round(cpr.valor_total * (0.002 * (pes.tipo='PJ')),2) senar,
-                                  round(cpr.valor_total * (0.015 * (pes.tipo='PJ')),2) valor_funrural,
+                                  valor_inss, 
+                                  valor_rat, 
+                                  valor_senar,
+                                  valor_funrural,
                                   ifnull(cpr.modalidade_frete, '') modalidade_frete,
-                                  cpr.quantidade * (prd.valor_desconto_frete * (ifnull(cpr.modalidade_frete, '')='CIF')) valor_frete,
-                                  cpr.valor_total - (round(cpr.valor_total * (0.015 * (pes.tipo='PJ')),2) 
-                                  + (cpr.quantidade * (prd.valor_desconto_frete * (ifnull(cpr.modalidade_frete, '')='CIF')))) valor_gerencial,
-                                  ((cpr.valor_total - (round(cpr.valor_total * (0.015 * (pes.tipo='PJ')),2) 
-                                  + (cpr.quantidade * (prd.valor_desconto_frete * (ifnull(cpr.modalidade_frete, '')='CIF'))))) / cpr.quantidade) valor_media_gerencial
-                                  ")
+                                  valor_frete,
+                                  valor_gerencial,
+                                  valor_media_gerencial
+            ")
             ->join('cadastro_pessoa pes', 'pes.codigo = cpr.fornecedor', 'inner')
             ->join('cadastro_produto prd', 'cpr.cod_produto = prd.codigo', 'inner')
             ->where('cpr.estado_registro = "ATIVO"')
             ->where('cpr.movimentacao = "COMPRA"')
             ->where('cpr.data_compra >=', $startDate)
             ->where('cpr.data_compra <=', $endDate);
-
 
         if ($produto) {
             $builder->where('cpr.cod_produto', $produto);
@@ -431,21 +551,18 @@ class ComprasModel extends Model
     public function getPrecoGerencialResumo($startDate, $endDate, $produto, $produtor, $filial)
     {
         $builder = $this->select("prd.descricao as produto,
-                                  prd.unidade_print,
-                                  count(1) quantidade_compra,
-                                  sum(cpr.quantidade) as quantidade_total,
-                                  sum(cpr.valor_total - (round(cpr.valor_total * (0.015 * (pes.tipo='PJ')),2) 
-                                  + (cpr.quantidade * (prd.valor_desconto_frete * (ifnull(cpr.modalidade_frete, '')='CIF'))))) as valor_total,
-                                  sum(cpr.valor_total - (round(cpr.valor_total * (0.015 * (pes.tipo='PJ')),2) 
-                                  + (cpr.quantidade * (prd.valor_desconto_frete * (ifnull(cpr.modalidade_frete, '')='CIF'))))) / sum(cpr.quantidade) as valor_media,
-                                  prd.nome_imagem")
+        prd.unidade_print,
+        count(1) quantidade_compra,
+        sum(cpr.quantidade) as quantidade_total,
+        sum(cpr.valor_total - (cpr.valor_funrural + cpr.valor_frete)) as valor_total,
+        sum(cpr.valor_total - (cpr.valor_funrural + cpr.valor_frete)) / sum(cpr.quantidade) as valor_media,
+        prd.nome_imagem")
             ->join('cadastro_pessoa pes', 'pes.codigo = cpr.fornecedor', 'inner')
             ->join('cadastro_produto prd', 'cpr.cod_produto = prd.codigo', 'inner')
             ->where('cpr.estado_registro = "ATIVO"')
             ->where('cpr.movimentacao = "COMPRA"')
             ->where('cpr.data_compra >=', $startDate)
             ->where('cpr.data_compra <=', $endDate);
-
 
         if ($produto) {
             $builder->where('cpr.cod_produto', $produto);
@@ -466,105 +583,134 @@ class ComprasModel extends Model
 
     public function getResumoComprador($startDate, $endDate, $produto, $filial)
     {
-        $sqlFilial = "";
-
-        if ($filial != '') {
-            $sqlFilial = "and c.filial = '$filial'";
-        }
-
-        $sql =  "select ifnull(b.primeiro_nome, b.nome_completo) comprador,
-                        sum(c.quantidade) volume_comprado,
-                        avg(c.quantidade) ticket_medio,
-                        f.clientes_ativos,
-                        -- CÁLCULO DA MÉDIA PONDERADA DO PREÇO UNITÁRIO GERENCIAL:
-                        sum(
-                            c.valor_total - ( -- Início do valor líquido gerencial da linha
-                                round(c.valor_total * (0.015 * (p.tipo='PJ')),2) 
-                                + 
-                                (c.quantidade * (prd.valor_desconto_frete * (ifnull(c.modalidade_frete, '')='CIF')))
-                            ) -- Fim do valor líquido gerencial da linha
-                        ) / sum(c.quantidade) preco_medio, -- Divisão pela soma total das quantidades
-                        sum(c.quantidade * (ifnull(c.modalidade_frete, '')='FOB')) volume_puxar,
-                        0 tempo_puxar
-                   from (select distinct comprador
-                           from cadastro_pessoa p
-                          where p.estado_registro <> 'EXCLUIDO'
-                            and p.comprador is not null
-                         union 
-                         select distinct comprador 
-                           from compras c
-                          where c.estado_registro = 'ATIVO'
-                            and c.movimentacao    = 'COMPRA'
-                            and c.cod_produto = '$produto'
-                            and c.comprador is not null
+         $sql =  "select COALESCE(ifnull(b.primeiro_nome, b.nome_completo), 'DISPONIVEL') comprador,
+                        coalesce(c.volume_comprado, 0) volume_comprado,
+                        coalesce(c.ticket_medio,0) ticket_medio,
+                        coalesce(f.clientes_ativos,0) clientes_ativos, 
+                        coalesce(c.preco_medio,0) preco_medio,
+                        coalesce(e.saldo,0) volume_puxar,
+                        coalesce(media_dias_atraso, 0) tempo_puxar
+                        -- obtém os compradores com base nas compras/cadastro de produtores 
+                   from (select distinct 
+                                COALESCE(b.comprador, 'DISPONIVEL') comprador
+                           from compras a
+                                inner join cadastro_pessoa b
+                                   on b.codigo = a.fornecedor 
+                            WHERE a.estado_registro = 'ATIVO'
+                              AND a.movimentacao    = 'COMPRA'
+                              AND a.cod_produto     = $produto
+                              AND a.filial          = if('$filial' = '', a.filial, '$filial')
                         order by 1) a
-                        inner join usuarios b
+                        -- obtém o nome do comprador
+                        left join usuarios b
                             on a.comprador = b.username 
-                        inner join (select comprador, 
+                        -- obtém os clientes ativos do comprador
+                        left join (select comprador, 
                                            count(*) clientes_ativos
                                       from cadastro_pessoa a
                                      where a.estado_registro ='ATIVO'
-                                       and a.comprador is not NULL 
                                     group by comprador) f
                                on a.comprador = f.comprador
-                        inner join compras c
-                            on a.comprador = c.comprador
-                           and c.movimentacao = 'COMPRA'
-                           and c.cod_produto = '$produto'
-                           and c.estado_registro = 'ATIVO'
-                           $sqlFilial
-                           and c.data_compra between '$startDate' 
-                                                 and '$endDate'
-                        inner join cadastro_produto prd
-                            on c.cod_produto = prd.codigo
-                        inner join cadastro_pessoa p
-                            on c.fornecedor = p.codigo
+                        -- obtém o volume de compra e o valor médio de compra do comprador
+                        left join (select c.comprador,
+                                          sum(c.quantidade) volume_comprado,
+                                          avg(c.quantidade) ticket_medio,
+                                          avg(c.valor_media_gerencial) preco_medio
+                                     from compras c
+                                    where c.movimentacao = 'COMPRA'
+                                      and c.cod_produto  = $produto
+                                      and c.estado_registro = 'ATIVO'
+                                      and c.filial          = if('$filial' = '', c.filial, '$filial')
+                                      and c.data_compra between '$startDate'  
+                                                            and '$endDate'
+                                  group by c.comprador) as c
+                            on c.comprador = a.comprador
+                        left join   (SELECT COALESCE(a.comprador, 'DISPONIVEL') comprador, 
+                                            sum(b.saldo) saldo,
+                                            avg(COALESCE(c.dias_atraso, 0)) AS media_dias_atraso
+                                        FROM cadastro_pessoa a
+                                            INNER JOIN saldo_armazenado b
+                                                ON a.codigo      = b.cod_fornecedor
+                                                AND b.cod_produto = $produto
+                                                AND b.filial      = if('$filial' = '', b.filial, '$filial')
+                                                AND b.saldo       < 0
+                                            LEFT JOIN (
+                                                SELECT c.fornecedor,
+                                                       DATEDIFF(CURDATE(), MAX(c.data_compra)) AS dias_atraso
+                                                    FROM compras c
+                                                    WHERE c.estado_registro = 'ATIVO'
+                                                    AND c.movimentacao      = 'COMPRA'
+                                                    AND c.cod_produto       = $produto
+                                                    AND c.filial            = if('$filial' = '', c.filial, '$filial')
+                                                    GROUP BY c.fornecedor
+                                            ) c 
+                                        ON c.fornecedor = a.codigo
+                                    GROUP BY COALESCE(a.comprador, 'DISPONIVEL')
+                        ) as e on a.comprador = e.comprador
                    group by ifnull(b.primeiro_nome, b.nome_completo)      
                    order by 3 desc
         ";
 
         $query = $this->query($sql);
-
-        // Obtém os resultados
         return $query->getResult();
     }
 
-    public function getResumoFilial($startDate, $endDate, $produto)
+    public function getResumoFilial($startDate, $endDate, $produto, $filial)
     {
-
         $sql =  "select a.apelido nome_filial,
-                        sum(b.quantidade) volume_comprado,
-                        avg(b.quantidade) ticket_medio,
+                        coalesce(b.volume_comprado, 0) volume_comprado,
+                        coalesce(avg(b.ticket_medio), 0) ticket_medio,
                         f.clientes_ativos,
-                        sum(b.valor_total - (round(b.valor_total * (0.015 * (p.tipo='PJ')),2) 
-                           + (b.quantidade * (prd.valor_desconto_frete * (ifnull(b.modalidade_frete, '')='CIF')))) / b.quantidade) 
-                           / sum(b.quantidade) preco_medio,
-                        sum(b.quantidade * (ifnull(b.modalidade_frete, '')='FOB')) volume_puxar,
-                        0 tempo_puxar
+                        coalesce(b.preco_medio,0) preco_medio,
+                        s.saldo volume_puxar,
+                        s.media_dias_atraso tempo_puxar
                     from filiais a
-                        inner join compras b
-                                on a.descricao = b.filial
-                            and b.movimentacao = 'COMPRA'
-                            and b.estado_registro = 'ATIVO'
-                            and b.cod_produto = '$produto'
-                            and b.data_compra between '$startDate' 
-                                                    and '$endDate'
-                            left join (select a.filial, 
-                                            count(distinct c.codigo) clientes_ativos
-                                        from compras a
-                                            inner join cadastro_pessoa c
-                                                    on a.fornecedor = c.codigo 
+                         inner join (select c.filial,
+                                            sum(c.quantidade) volume_comprado,
+                                            avg(c.quantidade) ticket_medio,
+                                            avg(c.valor_media_gerencial) preco_medio
+                                       from compras c
+                                      where c.movimentacao      = 'COMPRA'
+                                        and c.cod_produto       = $produto
+                                        and c.estado_registro   = 'ATIVO'
+                                        and c.filial            = if('$filial' = '', c.filial, '$filial')
+                                        and c.data_compra between '$startDate'  
+                                                              and '$endDate'
+                                     group by c.filial) as b
+                               on a.descricao = b.filial
+                        left join  (select a.filial, 
+                                           count(distinct c.codigo) clientes_ativos
+                                      from compras a
+                                           inner join cadastro_pessoa c
+                                                 on a.fornecedor = c.codigo 
                                                 and c.estado_registro = 'ATIVO'
                                                 and c.comprador is not null
-                                        where a.movimentacao    = 'COMPRA'
+                                      where a.movimentacao    = 'COMPRA'
                                         and a.estado_registro = 'ATIVO'
-                                        group by filial) f
-                                on a.descricao = f.filial
-                            inner join cadastro_pessoa p
-                                on b.fornecedor = p.codigo
-                            inner join cadastro_produto prd
-                                on b.cod_produto = prd.codigo
-                    group by a.apelido		 
+                                    group by filial) f
+                             on a.descricao = f.filial
+                        left join   (select b.filial, 
+                                            sum(b.saldo) saldo,
+                                            avg(coalesce(c.dias_atraso, 0)) as media_dias_atraso
+                                        from saldo_armazenado b
+                                            left join (select c.fornecedor,
+                                                                datediff(curdate(), max(c.data_compra)) as dias_atraso
+                                                            from compras c
+                                                        where c.estado_registro = 'ATIVO'
+                                                            and c.movimentacao      = 'COMPRA'
+                                                            and c.cod_produto       = $produto
+                                                            and c.filial            = if('$filial' = '', c.filial, '$filial')
+                                                        group by c.fornecedor
+                                                ) c 
+                                            on c.fornecedor = b.codigo
+                                        where b.cod_produto = $produto
+                                        and b.filial      = if('$filial' = '', b.filial, '$filial') 
+                                        and b.saldo       < 0
+                                        group by b.filial 
+                                    ) as s
+                             on a.descricao = s.filial
+                   where a.descricao = if('$filial' = '', a.descricao, '$filial') 
+                group by a.apelido		 
         ";
 
         $query = $this->query($sql);
@@ -573,7 +719,7 @@ class ComprasModel extends Model
         return $query->getResult();
     }
 
-    public function getTop10Cliente($startDate, $endDate, $produto, $filial )
+    public function getTop10Cliente($startDate, $endDate, $produto, $filial)
     {
         $sqlFilial = "";
         $sqlFilialTotal  = "";
@@ -736,9 +882,6 @@ class ComprasModel extends Model
     {
         $startDate = date('Y-m-d', strtotime('-12 months', strtotime($endDate)));
         $labels = gerarPeriodoAnoMesIndexJSON($endDate, 'Ym');
-
-        log_message('info', 'Labels: ' . json_encode($labels));
-
 
         $meses = json_decode($labels, true);
         $lablesFields = json_decode(gerarPeriodoAnoMesJSON($endDate), true);
@@ -994,14 +1137,14 @@ class ComprasModel extends Model
     public function getDashboardClassificacao($endDate, $produto, $filial)
     {
         $startDate = date('Y-m-d', strtotime('-12 months', strtotime($endDate)));
-        
+
         if ($filial != '') {
             $sqlFilial = "and a.filial = '$filial'";
             $sqlField  = "d.primeiro_nome";
         } else {
             $sqlFilial = "";
             $sqlField  = "b.apelido";
-        }   
+        }
 
         $sql =  "select $sqlField groupfield, 
                         e.descricao nome,
@@ -1033,6 +1176,7 @@ class ComprasModel extends Model
         sort($eixo_ys);
 
         // Inicializar a matriz com zeros
+        $valores = [];
         foreach ($eixo_xs as $eixo_x) {
             foreach ($eixo_ys as $eixo_y) {
                 $valores[$eixo_x][$eixo_y] = 0;
@@ -1042,11 +1186,11 @@ class ComprasModel extends Model
         foreach ($result as $item) {
             $valores[$item->nome][$item->groupfield] = $item->quantidade;
         }
-        
+
         $areaChartData = [];
         $areaChartData['labels'] = $eixo_ys;
         $datasets = [];
-     
+
         $i = 0;
         foreach ($valores as $linha) {
             $datasets[] = [
@@ -1057,7 +1201,7 @@ class ComprasModel extends Model
             ];
             $i++;
         }
-      
+
         $areaChartData['datasets'] = $datasets;
         return json_encode($areaChartData);
     }
@@ -1065,14 +1209,14 @@ class ComprasModel extends Model
     public function getDashboardCategoria($endDate, $produto, $filial)
     {
         $startDate = date('Y-m-d', strtotime('-12 months', strtotime($endDate)));
-        
+
         if ($filial != '') {
             $sqlFilial = "and a.filial = '$filial'";
             $sqlField  = "d.primeiro_nome";
         } else {
             $sqlFilial = "";
             $sqlField  = "b.apelido";
-        }   
+        }
 
         $sql =  "select $sqlField groupfield, 
                         f.nome,
@@ -1104,6 +1248,7 @@ class ComprasModel extends Model
         sort($eixo_ys);
 
         // Inicializar a matriz com zeros
+        $valores = [];
         foreach ($eixo_xs as $eixo_x) {
             foreach ($eixo_ys as $eixo_y) {
                 $valores[$eixo_x][$eixo_y] = 0;
@@ -1113,11 +1258,11 @@ class ComprasModel extends Model
         foreach ($result as $item) {
             $valores[$item->nome][$item->groupfield] = $item->quantidade;
         }
-        
+
         $areaChartData = [];
         $areaChartData['labels'] = $eixo_ys;
         $datasets = [];
-     
+
         $i = 0;
         foreach ($valores as $linha) {
             $datasets[] = [
@@ -1128,8 +1273,40 @@ class ComprasModel extends Model
             ];
             $i++;
         }
-      
+
         $areaChartData['datasets'] = $datasets;
         return json_encode($areaChartData);
+    }
+
+    public function getVendasSankhya($startDate, $endDate, $produto, $filial)
+    {
+        // Importar a classe Sankhya
+        require_once APPPATH . 'Services/Sankhya.php';
+        
+        // Construir a SQL para buscar vendas no Sankhya
+        $sql = "SELECT DTENTSAI AS DATA_MOVIMENTO, 
+                       SUM(QTDNEG) AS QUANTIDADE_VENDA
+                  FROM GRAN_VIEW_MOV_ENT_SAI_GRAOS
+                 WHERE CODPROD = $produto
+                   AND TIPMOV = 'V'
+                   AND DTENTSAI >= TO_DATE('" . str_replace('-', '', $startDate) . "','YYYYMMDD') 
+                   AND DTENTSAI <= TO_DATE('" . str_replace('-', '', $endDate) . "','YYYYMMDD')";
+        
+        // Adicionar filtro de filial se especificado
+        if (!empty($filial)) {
+            $sql .= " AND CODFILIAL = '$filial'";
+        }
+        
+        $sql .= " GROUP BY DTENTSAI ORDER BY DTENTSAI";
+
+        // Chamar a API do Sankhya
+        $result = \App\Services\Sankhya::queryExecuteAPI($sql);
+        
+        // Verificar se houve erro na execução
+        if ($result['errorCode'] !== 0) {
+            return [];
+        }
+        
+        return $result['rows'];
     }
 }

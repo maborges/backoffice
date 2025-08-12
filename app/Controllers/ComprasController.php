@@ -129,13 +129,6 @@ class ComprasController extends BaseController
         $produtor  = $this->request->getPost('produtor');
         $filial    = $this->request->getPost('filial');
 
-        /*
-        list($startDate, $endDate) = $this->validaPeriodo($startDate, $endDate);
-        list($produto) = $this->validaProduto($produto);
-        list($produtor) = $this->validaProdutor($produtor);
-        list($filial) = $this->validaFilial($filial); 
-        */
-
         $precoGerencial = $this->comprasModel->getPrecoGerencial($startDate, $endDate, $produto, $produtor, $filial);
  
         return $this->response->setJSON(['data' => $precoGerencial]);
@@ -174,6 +167,8 @@ class ComprasController extends BaseController
 
         $resumoComprador = $this->comprasModel->getResumoComprador($startDate, $endDate, $produto, $filial);
 
+        log_message('info', 'Resumo Comprador: ' . print_r($resumoComprador, true));
+
         return $this->response->setJSON([
             'data' => $resumoComprador
         ]);
@@ -185,6 +180,7 @@ class ComprasController extends BaseController
         $startDate = $this->request->getPost('startDate');
         $endDate   = $this->request->getPost('endDate');
         $produto   = $this->request->getPost('produto');
+        $filial    = $this->request->getPost('filial');
 
         if ($produto == '-2') {
             return $this->response->setJSON([
@@ -195,7 +191,7 @@ class ComprasController extends BaseController
         // Validar o período
         list($startDate, $endDate, $produto) = $this->validaParametroDashboard($startDate, $endDate, $produto);
 
-        $resumoComprador = $this->comprasModel->getResumoFilial($startDate, $endDate, $produto);
+        $resumoComprador = $this->comprasModel->getResumoFilial($startDate, $endDate, $produto, $filial);
 
         return $this->response->setJSON([
             'data' => $resumoComprador

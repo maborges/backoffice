@@ -12,14 +12,7 @@ class FilialModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [];
-
-    protected bool $allowEmptyInserts = false;
-    protected bool $updateOnlyChanged = true;
-
-    protected array $casts = [];
-    protected array $castHandlers = [
-        'codigo',
+    protected $allowedFields    = [
         'descricao',
         'apelido',
         'estado_registro',
@@ -29,6 +22,12 @@ class FilialModel extends Model
         'id_sankhya',
         'numero_apolice'
     ];
+
+    protected bool $allowEmptyInserts = false;
+    protected bool $updateOnlyChanged = true;
+
+    protected array $casts = [];
+    protected array $castHandlers = [];
 
     // Dates
     protected $useTimestamps = false;

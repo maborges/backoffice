@@ -66,6 +66,73 @@
                         </li>
                     </ul>
                 </li>
+
+                <!-- ESTOQUE -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fa-solid fa-warehouse"></i>
+                        <p>
+                            Posição de Estoque
+                            <i class="right fas fa-angle-right"></i>
+                        </p>
+                    </a>
+
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="<?= site_url('/saldo-armazenado') ?>" class="nav-link">
+                                <i class="fa-solid fa-database"></i>
+                                <p>Saldo Armazenado Gerencial</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="<?= site_url('/cadastro/contrato_posicao_estoque') ?>" class="nav-link">
+                                <i class="fa-solid fa-file-signature"></i>
+                                <p>Contrato Posição Estoque</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="<?= site_url('/posicao_estoque/saldo_gerencial') ?>" class="nav-link">
+                                <i class="fa-solid fa-boxes-stacked"></i>
+                                <p>Saldo Gerencial</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="<?= site_url('/posicao_estoque/saldo_suif') ?>" class="nav-link">
+                                <i class="fa-solid fa-cubes"></i>
+                                <p>Saldo SUIF</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="<?= site_url('/posicao_estoque/saldo_fiscal') ?>" class="nav-link">
+                                <i class=" fa-solid fa-layer-group"></i>
+                                <p>Saldo Fiscal</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class=" nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="<?= site_url('/posicao_estoque/saldo_4c') ?>" class="nav-link">
+                                <i class="fa-solid fa-medal"></i>
+                                <p>Saldo 4C</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                </li>
+
                 <!-- CRM -->
                 <li class="nav-item">
                     <a href="#" class="nav-link">
@@ -135,7 +202,7 @@
                     </ul>
                 </li>
                 <!-- Certificação -->
-                 <!--
+                <!--
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-copy"></i>

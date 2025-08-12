@@ -46,19 +46,13 @@ $routes->get('certificacao/questionario_confirma/(:alphanum)', 'Questionario::co
 // Dashboard
 $routes->get('gerencial/dashboard', 'DashboardGerencialController::index');
 $routes->post('gerencial/resumo_comprador', 'ComprasController::getResumoComprador');
-// $routes->get('gerencial/resumo_comprador', 'ComprasController::getResumoComprador');
 $routes->post('gerencial/resumo_filial', 'ComprasController::getResumoFilial');
 $routes->post('gerencial/top10_cliente', 'ComprasController::getTop10Cliente');
 $routes->post('gerencial/top10_regiao', 'ComprasController::getTop10Regiao');
 $routes->post('gerencial/resumo_classificacao', 'ComprasController::getResumoClassificacao');
-// $routes->get('gerencial/resumo_classificacao', 'ComprasController::getResumoClassificacao');
 $routes->post('gerencial/dashboard_filiais', 'ComprasController::getDashboardFiliais');
-//$routes->get('gerencial/dashboard_filiais', 'ComprasController::getDashboardFiliais');
 $routes->post('gerencial/dashboard_comprador', 'ComprasController::getDashboardComprador');
-//$routes->get('gerencial/dashboard_comprador', 'ComprasController::getDashboardComprador');
 $routes->post('gerencial/dashboard_classificacao', 'ComprasController::getDashboardClassificacao');
-//$routes->get('gerencial/dashboard_classificacao', 'ComprasController::getDashboardClassificacao');
-
 
 $routes->post('gerencial/dashboard_categoria', 'ComprasController::getDashboardCategoria');
 //$routes->get('gerencial/dashboard_categoria', 'ComprasController::getDashboardCategoria');
@@ -94,6 +88,15 @@ $routes->get('gerencial/compra_preco_gerencial', 'ComprasController::listaPrecoG
 
 //$routes->post('gerencial/compra_get_preco_gerencial_resumo', 'ComprasController::getPrecoGerencialResumo');
 $routes->get('gerencial/compra_get_preco_gerencial_resumo', 'ComprasController::getPrecoGerencialResumo');
+
+// Saldo Armazenado Gerencial
+$routes->get('saldo-armazenado', 'SaldoArmazenadoGerencialController::index');
+$routes->get('saldo-armazenado/new', 'SaldoArmazenadoGerencialController::new');
+$routes->post('saldo-armazenado/create', 'SaldoArmazenadoGerencialController::create');
+$routes->get('saldo-armazenado/edit/(:num)', 'SaldoArmazenadoGerencialController::edit/$1');
+$routes->post('saldo-armazenado/update/(:num)', 'SaldoArmazenadoGerencialController::update/$1');
+$routes->get('saldo-armazenado/delete/(:num)', 'SaldoArmazenadoGerencialController::delete/$1');
+$routes->post('saldo-armazenado/busca', 'SaldoArmazenadoGerencialController::busca');
 
 
 // Cadastros
@@ -137,3 +140,31 @@ $routes->get('cadastro/filial_comprador_edita/(:alphanum)/(:alphanum)', 'FilialC
 $routes->post('cadastro/filial_comprador_atualiza', 'FilialCompradorController::atualiza');
 $routes->get('cadastro/filial_comprador_exclui/(:alphanum)/(:alphanum)', 'FilialCompradorController::exclui/$1/$2');
 
+// Posição de Estoque Contratos
+$routes->get('cadastro/contrato_posicao_estoque', 'ContratoPosicaoEstoqueController::index');
+$routes->get('cadastro/contrato_posicao_estoque_cria', 'ContratoPosicaoEstoqueController::cria');
+$routes->post('cadastro/contrato_posicao_estoque_grava', 'ContratoPosicaoEstoqueController::grava');
+$routes->get('cadastro/contrato_posicao_estoque_edita/(:alphanum)', 'ContratoPosicaoEstoqueController::edita/$1');
+$routes->post('cadastro/contrato_posicao_estoque_atualiza', 'ContratoPosicaoEstoqueController::atualiza');
+$routes->get('cadastro/contrato_posicao_estoque_exclui/(:alphanum)', 'ContratoPosicaoEstoqueController::exclui/$1');
+$routes->get('cadastro/contrato_posicao_estoque_locate', 'ContratoPosicaoEstoqueController::findLikeName');
+$routes->post('cadastro/contrato_posicao_estoque_busca', 'ContratoPosicaoEstoqueController::buscarPorProdutoEFilial');
+
+
+// Posição de Estoque
+$routes->get('posicao_estoque/contrato_posicao_estoque', 'PosicaoEstoqueController::contratoPosicaoEstoque');
+
+$routes->get('posicao_estoque/saldo_gerencial', 'PosicaoEstoqueController::saldoGerencial');
+$routes->post('posicao_estoque/get_saldo_gerencial', 'PosicaoEstoqueController::getSaldoGerencial');
+
+$routes->get('posicao_estoque/saldo_suif', 'PosicaoEstoqueController::saldoSuif');
+$routes->post('posicao_estoque/get_saldo_suif', 'PosicaoEstoqueController::getSaldoSuif');
+
+$routes->get('posicao_estoque/saldo_fiscal', 'PosicaoEstoqueController::saldoFiscal');
+$routes->post('posicao_estoque/get_saldo_fiscal', 'PosicaoEstoqueController::getSaldoFiscal');
+
+$routes->get('posicao_estoque/saldo_4c', 'PosicaoEstoqueController::saldo4c');
+$routes->post('posicao_estoque/get_saldo_4c', 'PosicaoEstoqueController::getSaldo4c');
+
+// Gets de teste
+$routes->get('posicao_estoque/teste', 'PosicaoEstoqueController::getSaldoGerencial');

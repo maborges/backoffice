@@ -132,17 +132,8 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <!--
-            <div class="col-md-6">
-                <div class="card card-body shadow-sm">
-                    <div class="chart">
-                        <canvas id="chartResumoClassificacao" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                    </div>
-                </div>
-            </div>
-            -->
 
+        <div class="row">
             <div class="col-md-6">
                 <div class="card card-body shadow-sm">
                     <div class="chart">
@@ -176,9 +167,6 @@
                 </div>
             </div>
         </div>
-
-
-
 
     </div>
 
@@ -214,7 +202,7 @@
                 .column(2)
                 .data()
                 .reduce((a, b) => intVal(a) + intVal(b), 0);
-            let countTicket = api.column(2).data().length;
+            let countTicket = api.column(2).data().filter(value => parseFloat(value) > 0).length;
             let mediaTicket = countTicket > 0 ? totalTicket / countTicket : 0;
 
             // Total Clientes Ativos
@@ -228,7 +216,7 @@
                 .column(4)
                 .data()
                 .reduce((a, b) => intVal(a) + intVal(b), 0);
-            let countPreco = api.column(4).data().length;
+            let countPreco = api.column(4).data().filter(value => parseFloat(value) > 0).length;
             let mediaPreco = countPreco > 0 ? totalPreco / countPreco : 0;
 
             // Total Volume Puxar
@@ -242,27 +230,45 @@
                 .column(6)
                 .data()
                 .reduce((a, b) => intVal(a) + intVal(b), 0);
-            let countTempo = api.column(6).data().length;
+            let countTempo = api.column(6).data().filter(value => parseFloat(value) > 0).length;
             let mediaTempoPuxar = countTempo > 0 ? totalTempo / countTempo : 0;
 
             // Atualiza o rodapé
             $(api.column(1).footer()).html(
-                '<strong>' + totalVolume.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+                '<strong>' + totalVolume.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) + '</strong>'
             );
             $(api.column(2).footer()).html(
-                '<strong>' + mediaTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+                '<strong>' + mediaTicket.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + '</strong>'
             );
             $(api.column(3).footer()).html(
-                '<strong>' + totalClientes.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+                '<strong>' + totalClientes.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }) + '</strong>'
             );
             $(api.column(4).footer()).html(
-                '<strong>' + mediaPreco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+                '<strong>' + mediaPreco.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + '</strong>'
             );
             $(api.column(5).footer()).html(
-                '<strong>' + totalVolumePuxar.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+                '<strong>' + totalVolumePuxar.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) + '</strong>'
             );
             $(api.column(6).footer()).html(
-                '<strong>' + mediaTempoPuxar.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+                '<strong>' + mediaTempoPuxar.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }) + '</strong>'
             );
         },
         caption: 'Resumo Comprador',
@@ -456,22 +462,40 @@
 
             // Atualiza o rodapé
             $(api.column(1).footer()).html(
-                '<strong>' + totalVolume.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+                '<strong>' + totalVolume.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) + '</strong>'
             );
             $(api.column(2).footer()).html(
-                '<strong>' + mediaTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+                '<strong>' + mediaTicket.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + '</strong>'
             );
             $(api.column(3).footer()).html(
-                '<strong>' + totalClientes.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+                '<strong>' + totalClientes.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }) + '</strong>'
             );
             $(api.column(4).footer()).html(
-                '<strong>' + mediaPreco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</strong>'
+                '<strong>' + mediaPreco.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + '</strong>'
             );
             $(api.column(5).footer()).html(
-                '<strong>' + totalVolumePuxar.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '</strong>'
+                '<strong>' + totalVolumePuxar.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 3,
+                    maximumFractionDigits: 3
+                }) + '</strong>'
             );
             $(api.column(6).footer()).html(
-                '<strong>' + mediaTempoPuxar.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '</strong>'
+                '<strong>' + mediaTempoPuxar.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }) + '</strong>'
             );
         },
         caption: 'Resumo Filial',
@@ -702,11 +726,11 @@
                         maximumFractionDigits: 3
                     });
 
-                    return type === 'display'
-                    ? '<div class="progress" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100">' +
-                            '<div class="progress-bar overflow-visible bg-warning progress-bar-striped" style="width: ' + data + '%"><strong>' + valorFormatado + ' %</strong></div>' +
-                        '</div>'
-                    : valorFormatado;
+                    return type === 'display' ?
+                        '<div class="progress" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100">' +
+                        '<div class="progress-bar overflow-visible bg-warning progress-bar-striped" style="width: ' + data + '%"><strong>' + valorFormatado + ' %</strong></div>' +
+                        '</div>' :
+                        valorFormatado;
                 }
             }
 
@@ -807,11 +831,11 @@
                         maximumFractionDigits: 3
                     });
 
-                    return type === 'display'
-                    ? '<div class="progress" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100">' +
-                            '<div class="progress-bar overflow-visible bg-warning progress-bar-striped" style="width: ' + data + '%"><strong>' + valorFormatado + ' %</strong></div>' +
-                        '</div>'
-                    : valorFormatado;
+                    return type === 'display' ?
+                        '<div class="progress" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100">' +
+                        '<div class="progress-bar overflow-visible bg-warning progress-bar-striped" style="width: ' + data + '%"><strong>' + valorFormatado + ' %</strong></div>' +
+                        '</div>' :
+                        valorFormatado;
                 }
             }
 
@@ -1043,7 +1067,7 @@
                 legend: {
                     position: 'left',
                 },
-              
+
             },
             interaction: {
                 intersect: false
@@ -1062,11 +1086,12 @@
             type: 'bar',
             data: data,
             options: areaChartOptions // Registrando o plugin manualmente
-        }); 
+        });
     }
 
 
     let chartDashboardFilial;
+
     function loadChartDashboardFilialData() {
         loadChartData("<?= base_url('gerencial/dashboard_filiais') ?>", {
             endDate: $('#endDate').val(),
@@ -1102,6 +1127,7 @@
     }
 
     let chartDashboardComprador;
+
     function loadChartDashboardCompradorData() {
         loadChartData("<?= base_url('gerencial/dashboard_comprador') ?>", {
             endDate: $('#endDate').val(),
@@ -1137,6 +1163,7 @@
     }
 
     let chartDashboardClassificacao;
+
     function loadChartDashboardClassificacao() {
         loadChartData("<?= base_url('gerencial/dashboard_classificacao') ?>", {
             endDate: $('#endDate').val(),
@@ -1173,6 +1200,7 @@
     }
 
     let chartDashboardCategoria;
+
     function loadChartDashboardCategoria() {
         loadChartData("<?= base_url('gerencial/dashboard_categoria') ?>", {
             endDate: $('#endDate').val(),
@@ -1208,9 +1236,6 @@
             });
         });
     }
-
-    
-
 </script>
 
 <?= $this->endSection() ?>

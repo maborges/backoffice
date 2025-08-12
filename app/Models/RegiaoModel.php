@@ -65,10 +65,9 @@ class RegiaoModel extends Model
         return $resultFields;
     }
 
-    public function alreadyExists($filial, $comprador): bool
+    public function alreadyExists($nome): bool
     {
-        return $this->where('filial', $filial)
-                    ->where('comprador', $comprador)
+        return $this->where('nome_regiao', $nome)
                     ->countAllResults() > 0;
     }
 

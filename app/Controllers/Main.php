@@ -12,7 +12,7 @@ class Main extends BaseController
     {
         $dashboardModel = new Dashboard();
         $data = $dashboardModel->dataPage();
-        $data['title'] = 'Dashboard Administrativo';
+        $data['title'] = 'Dashboard';
         $data['page'] = 'Dashboard Administrativo';
     
         return view('dashboard/home',$data);

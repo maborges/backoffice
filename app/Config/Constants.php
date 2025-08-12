@@ -103,7 +103,7 @@ define('APP_VERSION', '1.0.0');
 
 // Database access
 define('DB_DNS',                ''); 
-define('DB_HOST',               '172.17.16.18');
+define('DB_HOST',               '172.17.16.18');  // Produção 172.17.16.18   Homologação 172.17.16.19
 define('DB_NAME',               'suif_grancafe');
 define('DB_USER',               'suif_user');
 define('DB_PASS',               'asRf455TtykgQ7X');
@@ -111,6 +111,8 @@ define('DB_PORT',               3306);
 define('DB_CHARSET',            'utf8mb4');
 define('DB_COLLAT',             'utf8mb4_general_ci');
 
+// Ambiente
+define('DB_AMBIENTE', (DB_HOST === '172.17.16.19') ? 'Homologação' : 'Produção');
 // encriptografia
 define('ENCRYPTION_KEY',        '8nsnIqk9SgfvBHdqqXuxBJesKKFn6gbO');
 

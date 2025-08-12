@@ -320,13 +320,13 @@ if (!empty($server_error)) {
                     data: 'valor_total'
                 },
                 {
-                    data: 'inss'
+                    data: 'valor_inss'
                 },
                 {
-                    data: 'rat'
+                    data: 'valor_rat'
                 },
                 {
-                    data: 'senar'
+                    data: 'valor_senar'
                 },
                 {
                     data: 'valor_funrural'
